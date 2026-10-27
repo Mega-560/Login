@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
+import Modal from 'react-bootstrap/Modal'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../cart/CartContext'
 import { catalogueCategories, catalogueCurrency, catalogueParts, type CataloguePart } from '../data/catalogueParts'
@@ -15,15 +16,6 @@ function CatalogueCardsPage() {
   const [activePart, setActivePart] = useState<CataloguePart | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [notice, setNotice] = useState('')
-
-  useEffect(() => {
-    if (!activePart) return
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setActivePart(null)
-    }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [activePart])
 
   const filteredParts = useMemo(() => catalogueParts.filter((part) => {
     const matchesCategory = category === 'All parts' || part.category === category
@@ -174,9 +166,17 @@ function CatalogueCardsPage() {
         <button type="button" className="catalogue-secondary-button" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>Next</button>
       </nav>
 
-      {activePart && (
-        <div className="catalogue-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setActivePart(null) }}>
-          <section className="catalogue-product-modal" role="dialog" aria-modal="true" aria-labelledby="catalogue-modal-title">
+      <Modal
+        show={Boolean(activePart)}
+        onHide={() => setActivePart(null)}
+        centered
+        dialogClassName="catalogue-product-modal-dialog"
+        contentClassName="catalogue-product-modal"
+        backdropClassName="catalogue-modal-backdrop"
+        aria-labelledby="catalogue-modal-title"
+      >
+        {activePart && (
+          <>
             <button type="button" className="catalogue-modal-close" aria-label="Close part details" onClick={() => setActivePart(null)}>×</button>
             <div className="catalogue-modal-image"><img src={activePart.image} alt={activePart.imageAlt} /></div>
             <div className="catalogue-modal-copy">
@@ -200,9 +200,9 @@ function CatalogueCardsPage() {
                 <button className="catalogue-primary-button" type="button" onClick={() => addCurrentPart(true)}>Buy now</button>
               </div>
             </div>
-          </section>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </section>
   )
 }

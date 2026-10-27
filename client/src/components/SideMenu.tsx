@@ -37,6 +37,10 @@ function SideMenu({ user, isCollapsed, onToggle }: SideMenuProps) {
           <MenuIcon name="catalogue" />
           <span className="nav-label">Catalogue</span>
         </NavLink>
+        <NavLink to="/catalogue/inventory" className="sidebar-link" aria-label="Product inventory" title="View product inventory">
+          <MenuIcon name="catalogue" />
+          <span className="nav-label">Inventory</span>
+        </NavLink>
         {clientPages.filter(({ key }) => user.permissions[key].view).map(({ key, label, path }) => (
           <NavLink key={key} to={path} end={key === 'home'} className="sidebar-link" aria-label={label} title={label}>
             <MenuIcon name={key} />

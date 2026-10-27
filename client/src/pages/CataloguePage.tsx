@@ -95,6 +95,7 @@ function CataloguePage() {
           <p>Browse sample parts, compare vehicle fitment, and check pricing and availability.</p>
         </div>
         <div className="catalogue-heading-actions">
+          <Link className="catalogue-card-view-link" to="/catalogue/inventory">Product inventory <span aria-hidden="true">→</span></Link>
           <Link className="catalogue-card-view-link" to="/catalogue/pdf">PDF catalogue <span aria-hidden="true">→</span></Link>
           <Link className="catalogue-card-view-link" to="/catalogue/cards">Browse cards <span aria-hidden="true">→</span></Link>
           <Link className="catalogue-cart-link" to="/cart" aria-label={`Open cart, ${itemCount} items`}>Cart <span>{itemCount}</span></Link>

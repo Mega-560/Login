@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import Modal from 'react-bootstrap/Modal'
 import { Link, useNavigate } from 'react-router-dom'
 import type { SessionUser } from '../modules/auth/authApi'
 import { authApi } from '../modules/auth/authApi'
@@ -42,7 +43,6 @@ function Header({ user }: HeaderProps) {
   useEffect(() => {
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        setIsProfileOpen(false)
         setIsMenuOpen(false)
       }
     }
@@ -167,16 +167,13 @@ function Header({ user }: HeaderProps) {
             aria-haspopup="true"
             aria-expanded={isMenuOpen}
             aria-controls="account-profile-menu"
+            aria-label="Account options"
             title="Open account options"
             onClick={() => setIsMenuOpen((open) => !open)}
           >
             <span className="avatar avatar-small">
               {avatar && <img src={avatar} alt="" onError={() => setImageFailed(true)} />}
               {!avatar && initials}
-            </span>
-            <span className="topbar-user-copy">
-              <strong>{profile.name}</strong>
-              <small>{profile.email}</small>
             </span>
             <span className="topbar-profile-caret" aria-hidden="true">⌄</span>
           </button>
@@ -194,65 +191,64 @@ function Header({ user }: HeaderProps) {
       </div>
       {logoutError && <span className="topbar-logout-error" role="alert">{logoutError}</span>}
 
-      {isProfileOpen && (
-        <div
-          className="profile-modal-backdrop"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setIsProfileOpen(false)
-          }}
-        >
-          <section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-            <div className="profile-modal-heading">
-              <div>
-                <span className="topbar-kicker">ACCOUNT SETTINGS</span>
-                <h2 id="profile-modal-title">Your profile</h2>
-                <p>Update the details and photo shown across your workspace.</p>
-              </div>
-              <button className="profile-modal-close" type="button" aria-label="Close profile settings" title="Close profile settings" onClick={() => setIsProfileOpen(false)}>×</button>
-            </div>
-            <form onSubmit={saveProfile}>
-              <div className="profile-photo-editor">
-                <span className="avatar profile-photo-preview">
-                  {avatar && <img src={avatar} alt="" onError={() => setImageFailed(true)} />}
-                  {!avatar && initials}
-                </span>
-                <div className="profile-photo-controls">
-                  <label className="profile-file-label">
-                    Choose a photo
-                    <input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} />
-                  </label>
-                  <small>PNG, JPEG, or WebP · up to 512 KB</small>
-                  {selectedImage && (
-                    <button className="profile-secondary-button" type="button" onClick={uploadImage} disabled={isUploading}>
-                      {isUploading ? 'Uploading…' : 'Upload photo'}
-                    </button>
-                  )}
-                  {profile.avatarUrl && !selectedImage && (
-                    <button className="profile-remove-photo" type="button" onClick={removeImage} disabled={isUploading}>
-                      {isUploading ? 'Removing…' : 'Remove photo'}
-                    </button>
-                  )}
-                </div>
-              </div>
-              <label className="profile-field">
-                <span>Full name</span>
-                <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} required autoComplete="name" autoFocus />
-              </label>
-              <label className="profile-field">
-                <span>Email address</span>
-                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
-              </label>
-              {profileError && <p className="profile-form-error" role="alert">{profileError}</p>}
-              <div className="profile-modal-actions">
-                <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>Cancel</button>
-                <button className="profile-save-button" type="submit" disabled={isSaving}>
-                  {isSaving ? 'Saving…' : 'Save changes'}
-                </button>
-              </div>
-            </form>
-          </section>
+      <Modal
+        show={isProfileOpen}
+        onHide={() => setIsProfileOpen(false)}
+        centered
+        dialogClassName="profile-modal-dialog"
+        contentClassName="profile-modal"
+        backdropClassName="profile-modal-backdrop"
+        aria-labelledby="profile-modal-title"
+      >
+        <div className="profile-modal-heading">
+          <div>
+            <span className="topbar-kicker">ACCOUNT SETTINGS</span>
+            <h2 id="profile-modal-title">Your profile</h2>
+            <p>Update the details and photo shown across your workspace.</p>
+          </div>
+          <button className="profile-modal-close" type="button" aria-label="Close profile settings" title="Close profile settings" onClick={() => setIsProfileOpen(false)}>×</button>
         </div>
-      )}
+        <form onSubmit={saveProfile}>
+          <div className="profile-photo-editor">
+            <span className="avatar profile-photo-preview">
+              {avatar && <img src={avatar} alt="" onError={() => setImageFailed(true)} />}
+              {!avatar && initials}
+            </span>
+            <div className="profile-photo-controls">
+              <label className="profile-file-label">
+                Choose a photo
+                <input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} />
+              </label>
+              <small>PNG, JPEG, or WebP · up to 512 KB</small>
+              {selectedImage && (
+                <button className="profile-secondary-button" type="button" onClick={uploadImage} disabled={isUploading}>
+                  {isUploading ? 'Uploading…' : 'Upload photo'}
+                </button>
+              )}
+              {profile.avatarUrl && !selectedImage && (
+                <button className="profile-remove-photo" type="button" onClick={removeImage} disabled={isUploading}>
+                  {isUploading ? 'Removing…' : 'Remove photo'}
+                </button>
+              )}
+            </div>
+          </div>
+          <label className="profile-field">
+            <span>Full name</span>
+            <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} required autoComplete="name" autoFocus />
+          </label>
+          <label className="profile-field">
+            <span>Email address</span>
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
+          </label>
+          {profileError && <p className="profile-form-error" role="alert">{profileError}</p>}
+          <div className="profile-modal-actions">
+            <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>Cancel</button>
+            <button className="profile-save-button" type="submit" disabled={isSaving}>
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </header>
   )
 }

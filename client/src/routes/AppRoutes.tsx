@@ -17,6 +17,7 @@ import '../App.css'
 
 const CataloguePage = lazy(() => import('../pages/CataloguePage'))
 const CatalogueCardsPage = lazy(() => import('../pages/CatalogueCardsPage'))
+const CatalogueInventoryPage = lazy(() => import('../pages/CatalogueInventoryPage'))
 const CataloguePdfPage = lazy(() => import('../pages/CataloguePdfPage'))
 const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
@@ -47,6 +48,14 @@ function AppRoutes() {
             element={(
               <Suspense fallback={<div className="catalogue-loading" role="status">Loading parts catalogue…</div>}>
                 <CatalogueCardsPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="catalogue/inventory"
+            element={(
+              <Suspense fallback={<div className="catalogue-loading" role="status">Loading product inventory…</div>}>
+                <CatalogueInventoryPage />
               </Suspense>
             )}
           />
