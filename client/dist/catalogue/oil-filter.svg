@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440">
+  <defs>
+    <linearGradient id="back" x2="1" y2="1"><stop stop-color="#f0ece5"/><stop offset="1" stop-color="#e4ddd1"/></linearGradient>
+    <linearGradient id="can" x2="1"><stop stop-color="#8c3128"/><stop offset=".22" stop-color="#d65741"/><stop offset=".55" stop-color="#a5372d"/><stop offset=".83" stop-color="#e06a4e"/><stop offset="1" stop-color="#7e2c25"/></linearGradient>
+    <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#dce1dd"/><stop offset=".5" stop-color="#8d9992"/><stop offset="1" stop-color="#e8ece9"/></linearGradient>
+  </defs>
+  <rect width="720" height="440" rx="24" fill="url(#back)"/>
+  <ellipse cx="355" cy="362" rx="155" ry="24" fill="#49372f" opacity=".14"/>
+  <path d="M280 107h150l29 31v172l-29 31H280l-29-31V138z" fill="url(#can)" stroke="#762920" stroke-width="7"/>
+  <path d="M280 106h150l27 29H253z" fill="#f08c68"/>
+  <path d="M280 340h150l27-29H253z" fill="#8a3028"/>
+  <path d="M267 177h176v106H267z" fill="#f5eee4" opacity=".95"/>
+  <path d="M286 196h138M286 211h138M286 226h138M286 241h138M286 256h104" stroke="#b94a36" stroke-width="5" opacity=".72"/>
+  <circle cx="355" cy="328" r="19" fill="url(#metal)" stroke="#68766f" stroke-width="5"/>
+</svg>
