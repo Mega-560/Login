@@ -16,6 +16,7 @@ import RequireAuth from './modules/auth/RequireAuth'
 import './App.css'
 
 const DashboardPage = lazy(() => import('./components/DashboardPage'))
+const StateMapPage = lazy(() => import('./components/StateMapPage'))
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
             <Route path="users" element={<AdminPage />} />
             <Route path="roles" element={<RolePage />} />
             <Route path="calendar" element={<CalendarPage />} />
+            <Route
+              path="state-map"
+              element={(
+                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading India state map…</div>}>
+                  <StateMapPage />
+                </Suspense>
+              )}
+            />
             <Route path="theme" element={<ThemePage />} />
           </Route>
           <Route path="/" element={<Navigate to="/admin" replace />} />
