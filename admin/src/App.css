@@ -1473,6 +1473,33 @@
 	margin-bottom: 12px;
 }
 
+.admin-chart-actions {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.admin-chart-export {
+	min-height: 27px;
+	padding: 0 8px;
+	border: 1px solid #dfe7dd;
+	border-radius: 3px;
+	color: #45634e;
+	background: #fff;
+	cursor: pointer;
+	font: inherit;
+	font-size: 9px;
+	font-weight: 650;
+	white-space: nowrap;
+}
+
+.admin-chart-export:hover,
+.admin-chart-export:focus-visible {
+	border-color: #9db59a;
+	color: #254537;
+	background: #f2f7ed;
+}
+
 .admin-chart-heading h2 {
 	margin: 0;
 	color: #293d32;
@@ -3651,6 +3678,12 @@
 :root[data-nexus-theme="custom"] .role-page-copy strong,
 :root[data-nexus-theme="custom"] .role-summary-item strong {
 	color: var(--theme-text);
+}
+
+:root[data-nexus-theme="custom"] .admin-chart-export {
+	border-color: var(--theme-border);
+	color: var(--theme-text);
+	background: var(--theme-surface);
 }
 
 :root[data-nexus-theme="custom"] .admin-dashboard-heading p:last-child,

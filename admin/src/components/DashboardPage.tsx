@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import {
   BarElement,
   CategoryScale,
@@ -12,6 +13,19 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Bar, Doughnut, Line } from 'react-chartjs-2'
+
+type ExportableChart = {
+  toBase64Image: (type?: string, quality?: number) => string
+}
+
+function downloadChart(chart: ExportableChart | null, filename: string) {
+  if (!chart) return
+
+  const link = document.createElement('a')
+  link.href = chart.toBase64Image('image/png', 1)
+  link.download = `${filename}.png`
+  link.click()
+}
 
 ChartJS.register(
   ArcElement,
@@ -158,6 +172,10 @@ const orderStatusOptions: ChartOptions<'doughnut'> = {
 
 function DashboardPage() {
   const totalUnits = inventory.reduce((total, item) => total + item.units, 0)
+  const salesChart = useRef<ChartJS<'line'>>(null)
+  const inventoryChart = useRef<ChartJS<'bar'>>(null)
+  const ordersChart = useRef<ChartJS<'bar'>>(null)
+  const orderStatusChart = useRef<ChartJS<'doughnut'>>(null)
 
   return (
     <section className="admin-dashboard">
@@ -206,40 +224,52 @@ function DashboardPage() {
         <article className="admin-chart-panel admin-chart-panel-wide">
           <div className="admin-chart-heading">
             <div><h2>Sales overview</h2><p>Monthly revenue · USD</p></div>
-            <span className="admin-chart-badge">Sales</span>
+            <div className="admin-chart-actions">
+              <span className="admin-chart-badge">Sales</span>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(salesChart.current, 'sales-overview')}>Export PNG</button>
+            </div>
           </div>
           <div className="admin-chart-canvas admin-sales-chart">
-            <Line data={salesData} options={salesOptions} aria-label="Line chart showing monthly sales in USD" role="img" />
+            <Line ref={salesChart} data={salesData} options={salesOptions} aria-label="Line chart showing monthly sales in USD" role="img" />
           </div>
         </article>
 
         <article className="admin-chart-panel">
           <div className="admin-chart-heading">
             <div><h2>Inventory by category</h2><p>Available units by product type</p></div>
-            <span className="admin-chart-badge">Stock</span>
+            <div className="admin-chart-actions">
+              <span className="admin-chart-badge">Stock</span>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(inventoryChart.current, 'inventory-by-category')}>Export PNG</button>
+            </div>
           </div>
           <div className="admin-chart-canvas admin-inventory-chart">
-            <Bar data={inventoryData} options={inventoryOptions} aria-label="Bar chart showing inventory units by category" role="img" />
+            <Bar ref={inventoryChart} data={inventoryData} options={inventoryOptions} aria-label="Bar chart showing inventory units by category" role="img" />
           </div>
         </article>
 
         <article className="admin-chart-panel">
           <div className="admin-chart-heading">
             <div><h2>Order activity</h2><p>Orders placed each month</p></div>
-            <span className="admin-chart-badge">Orders</span>
+            <div className="admin-chart-actions">
+              <span className="admin-chart-badge">Orders</span>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(ordersChart.current, 'order-activity')}>Export PNG</button>
+            </div>
           </div>
           <div className="admin-chart-canvas admin-orders-chart">
-            <Bar data={ordersData} options={ordersOptions} aria-label="Bar chart showing monthly order counts" role="img" />
+            <Bar ref={ordersChart} data={ordersData} options={ordersOptions} aria-label="Bar chart showing monthly order counts" role="img" />
           </div>
         </article>
 
         <article className="admin-chart-panel">
           <div className="admin-chart-heading">
             <div><h2>Order status</h2><p>Breakdown of sample orders</p></div>
-            <span className="admin-chart-badge">Fulfilment</span>
+            <div className="admin-chart-actions">
+              <span className="admin-chart-badge">Fulfilment</span>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(orderStatusChart.current, 'order-status')}>Export PNG</button>
+            </div>
           </div>
           <div className="admin-chart-canvas admin-status-chart">
-            <Doughnut data={orderStatusData} options={orderStatusOptions} aria-label="Doughnut chart showing order status breakdown" role="img" />
+            <Doughnut ref={orderStatusChart} data={orderStatusData} options={orderStatusOptions} aria-label="Doughnut chart showing order status breakdown" role="img" />
           </div>
         </article>
       </section>
