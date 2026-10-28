@@ -1,14 +1,51 @@
 import { useState } from 'react'
-import { applyTheme, isThemeId, themes, themeStorageKey, type ThemeId } from '../theme'
+import {
+  applyCustomTheme,
+  applyTheme,
+  customThemeStorageKey,
+  defaultCustomTheme,
+  isCustomThemeColors,
+  isThemeId,
+  themes,
+  themeStorageKey,
+  type CustomThemeColors,
+  type ThemeId,
+} from '../theme'
+
+type ThemeSelection = ThemeId | 'custom'
+
+function readSavedTheme(): ThemeSelection {
+  try {
+    const saved = window.localStorage.getItem(themeStorageKey)
+    if (saved === 'custom') {
+      const colors: unknown = JSON.parse(window.localStorage.getItem(customThemeStorageKey) ?? 'null')
+      return isCustomThemeColors(colors) ? 'custom' : 'forest'
+    }
+    return isThemeId(saved) ? saved : 'forest'
+  } catch {
+    return 'forest'
+  }
+}
+
+function readSavedCustomTheme(): CustomThemeColors {
+  try {
+    const saved: unknown = JSON.parse(window.localStorage.getItem(customThemeStorageKey) ?? 'null')
+    return isCustomThemeColors(saved) ? saved : defaultCustomTheme
+  } catch {
+    return defaultCustomTheme
+  }
+}
 
 function ThemePage() {
-  const savedTheme = window.localStorage.getItem(themeStorageKey)
-  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(isThemeId(savedTheme) ? savedTheme : 'forest')
+  const [selectedTheme, setSelectedTheme] = useState<ThemeSelection>(readSavedTheme)
+  const [customColors, setCustomColors] = useState<CustomThemeColors>(readSavedCustomTheme)
+  const [customSaved, setCustomSaved] = useState(() => readSavedTheme() === 'custom')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
   function chooseTheme(theme: ThemeId) {
     setSelectedTheme(theme)
+    setCustomSaved(false)
     setNotice('')
     setError('')
     applyTheme(theme)
@@ -20,6 +57,31 @@ function ThemePage() {
     }
   }
 
+  function updateCustomColor(color: keyof CustomThemeColors, value: string) {
+    const nextColors = { ...customColors, [color]: value }
+    setCustomColors(nextColors)
+    setSelectedTheme('custom')
+    setCustomSaved(false)
+    setNotice('')
+    setError('')
+    applyCustomTheme(nextColors)
+  }
+
+  function saveCustomTheme() {
+    setSelectedTheme('custom')
+    setNotice('')
+    setError('')
+    applyCustomTheme(customColors)
+    try {
+      window.localStorage.setItem(customThemeStorageKey, JSON.stringify(customColors))
+      window.localStorage.setItem(themeStorageKey, 'custom')
+      setCustomSaved(true)
+      setNotice('Your custom admin colors have been saved and applied.')
+    } catch {
+      setError('Your custom colors are applied for this visit but could not be saved in this browser.')
+    }
+  }
+
   return (
     <section className="theme-settings-page">
       <header className="theme-settings-header">
@@ -28,7 +90,7 @@ function ThemePage() {
           <h1>Admin appearance</h1>
           <p className="theme-settings-subtitle">Choose the look of your administrator workspace. Client portal settings stay separate.</p>
         </div>
-        <span className="theme-saved-indicator"><span /> Saved on this device</span>
+        <span className="theme-saved-indicator"><span /> {selectedTheme === 'custom' ? (customSaved ? 'Custom theme saved' : 'Previewing custom colors') : 'Saved on this device'}</span>
       </header>
 
       <div className="theme-settings-note">
@@ -78,8 +140,56 @@ function ThemePage() {
         })}
       </div>
 
+      <section className={`custom-theme-panel${selectedTheme === 'custom' ? ' selected' : ''}`} aria-labelledby="admin-custom-theme-title">
+        <div className="custom-theme-heading">
+          <div>
+            <p className="eyebrow">MAKE IT YOURS</p>
+            <h2 id="admin-custom-theme-title">Design a custom theme</h2>
+            <p>Changes preview instantly. Choose a separate hover color for buttons and navigation, then save to this device.</p>
+          </div>
+          <div className="custom-theme-preview" aria-label="Custom theme preview">
+            {[customColors.sidebar, customColors.accent, customColors.hover, customColors.page, customColors.surface].map((color, index) => (
+              <span key={`${index}-${color}`} style={{ backgroundColor: color }} />
+            ))}
+          </div>
+        </div>
+        <div className="custom-theme-colors">
+          {([
+            ['sidebar', 'Sidebar', 'Navigation and brand color'],
+            ['accent', 'Accent', 'Buttons and highlights'],
+            ['hover', 'Hover color', 'Color when hovering interactive elements'],
+            ['page', 'Page background', 'Main workspace background'],
+            ['surface', 'Card surface', 'Panels and cards'],
+          ] as const).map(([key, label, description]) => (
+            <label className="custom-theme-color" key={key}>
+              <span className="custom-theme-color-swatch" style={{ backgroundColor: customColors[key] }}>
+                <input
+                  type="color"
+                  value={customColors[key]}
+                  aria-label={`${label} color`}
+                  onChange={(event) => updateCustomColor(key, event.currentTarget.value)}
+                />
+              </span>
+              <span className="custom-theme-color-copy">
+                <strong>{label}</strong>
+                <small>{description}</small>
+              </span>
+              <code>{customColors[key].toUpperCase()}</code>
+            </label>
+          ))}
+        </div>
+        <div className="custom-theme-actions">
+          <span>Text colors are selected automatically for contrast.</span>
+          <button className="custom-theme-save-button" type="button" onClick={saveCustomTheme}>Save custom theme</button>
+        </div>
+      </section>
+
       <footer className="theme-settings-footer">
-        <span className="theme-feedback" role={error ? 'alert' : 'status'}>{error || notice || 'Choose a theme to apply it instantly.'}</span>
+        <span className="theme-feedback" role={error ? 'alert' : 'status'}>
+          {error || notice || (selectedTheme === 'custom' && !customSaved
+            ? 'Custom colors are previewed. Save them to keep this theme on your device.'
+            : 'Choose a theme to apply it instantly.')}
+        </span>
         <button className="theme-reset-button" type="button" title="Restore the default Forest theme" onClick={() => chooseTheme('forest')}>
           Reset to default
         </button>

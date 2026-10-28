@@ -43,7 +43,7 @@ function CheckoutPage() {
   const [name, setName] = useState(user.name)
   const [email, setEmail] = useState(user.email)
   const [paymentMethod, setPaymentMethod] = useState<DemoPaymentMethod>('card')
-  const [currency, setCurrency] = useState<CheckoutCurrency>('USD')
+  const [currency, setCurrency] = useState<CheckoutCurrency>('INR')
   const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null)
   const [exchangeLoading, setExchangeLoading] = useState(false)
   const [exchangeError, setExchangeError] = useState('')

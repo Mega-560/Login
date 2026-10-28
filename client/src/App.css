@@ -2171,6 +2171,321 @@
 	box-shadow: 0 0 0 2px rgba(131, 182, 157, 0.18);
 }
 
+.custom-theme-panel {
+	margin-top: 20px;
+	padding: 20px;
+	border: 1px solid var(--theme-border, #e2e7df);
+	border-radius: 7px;
+	color: var(--theme-text, #26382e);
+	background: var(--theme-surface, #fff);
+}
+
+.custom-theme-panel.selected {
+	border-color: var(--theme-accent, #8fb77a);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent, #8fb77a) 18%, transparent);
+}
+
+.custom-theme-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.custom-theme-heading .eyebrow {
+	margin-bottom: 6px;
+	color: var(--theme-muted, #768279);
+}
+
+.custom-theme-heading h2 {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 23px;
+	font-weight: 400;
+}
+
+.custom-theme-heading p:last-child {
+	margin: 6px 0 0;
+	color: var(--theme-muted, #768279);
+	font-size: 10px;
+}
+
+.custom-theme-preview {
+	display: flex;
+	flex: 0 0 auto;
+	padding: 5px;
+	border: 1px solid var(--theme-border, #e2e7df);
+	border-radius: 20px;
+}
+
+.custom-theme-preview span {
+	width: 22px;
+	height: 22px;
+	margin-left: -3px;
+	border: 2px solid var(--theme-surface, #fff);
+	border-radius: 50%;
+}
+
+.custom-theme-preview span:first-child {
+	margin-left: 0;
+}
+
+.custom-theme-colors {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin-top: 18px;
+}
+
+.custom-theme-color {
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	gap: 10px;
+	padding: 10px;
+	border: 1px solid var(--theme-border, #e2e7df);
+	border-radius: 5px;
+}
+
+.custom-theme-color-swatch {
+	position: relative;
+	display: block;
+	width: 34px;
+	height: 34px;
+	flex: 0 0 34px;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--theme-text, #26382e) 18%, transparent);
+	border-radius: 5px;
+}
+
+.custom-theme-color-swatch input {
+	position: absolute;
+	inset: -8px;
+	width: 50px;
+	height: 50px;
+	padding: 0;
+	border: 0;
+	cursor: pointer;
+}
+
+.custom-theme-color-copy {
+	display: grid;
+	min-width: 0;
+	gap: 2px;
+}
+
+.custom-theme-color-copy strong {
+	color: var(--theme-text, #26382e);
+	font-size: 10px;
+}
+
+.custom-theme-color-copy small {
+	overflow: hidden;
+	color: var(--theme-muted, #768279);
+	font-size: 8px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.custom-theme-color code {
+	margin-left: auto;
+	color: var(--theme-muted, #768279);
+	font: 9px var(--font-sans);
+}
+
+.custom-theme-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 15px;
+	padding-top: 14px;
+	border-top: 1px solid var(--theme-border, #e2e7df);
+}
+
+.custom-theme-actions > span {
+	color: var(--theme-muted, #768279);
+	font-size: 9px;
+}
+
+.custom-theme-save-button {
+	min-height: 36px;
+	padding: 0 14px;
+	border: 1px solid var(--theme-accent, #285246);
+	border-radius: 4px;
+	color: var(--theme-accent-text, #fff);
+	background: var(--theme-accent, #285246);
+	cursor: pointer;
+	font: inherit;
+	font-size: 10px;
+	font-weight: 700;
+}
+
+.custom-theme-save-button:hover {
+	background: var(--theme-accent-hover, #193a32);
+}
+
+:root[data-nexus-theme="custom"] body {
+	color: var(--theme-text);
+	background: var(--theme-page);
+}
+
+:root[data-nexus-theme="custom"] .app-shell,
+:root[data-nexus-theme="custom"] .main-content,
+:root[data-nexus-theme="custom"] .page-content {
+	color: var(--theme-text);
+	background: var(--theme-page);
+}
+
+:root[data-nexus-theme="custom"] .sidebar {
+	color: var(--theme-sidebar-text);
+	background: var(--theme-sidebar);
+}
+
+:root[data-nexus-theme="custom"] .brand-mark,
+:root[data-nexus-theme="custom"] .sidebar-link.active {
+	color: var(--theme-accent-text);
+	background: var(--theme-accent);
+}
+
+:root[data-nexus-theme="custom"] .sidebar-link,
+:root[data-nexus-theme="custom"] .sidebar-note {
+	color: color-mix(in srgb, var(--theme-sidebar-text) 78%, var(--theme-sidebar));
+}
+
+:root[data-nexus-theme="custom"] .topbar,
+:root[data-nexus-theme="custom"] .metric-grid,
+:root[data-nexus-theme="custom"] .metric-item,
+:root[data-nexus-theme="custom"] .role-card,
+:root[data-nexus-theme="custom"] .admin-user-form,
+:root[data-nexus-theme="custom"] .theme-option-card,
+:root[data-nexus-theme="custom"] .profile-dropdown {
+	color: var(--theme-text);
+	border-color: var(--theme-border);
+	background: var(--theme-surface);
+}
+
+:root[data-nexus-theme="custom"] .topbar {
+	background: color-mix(in srgb, var(--theme-surface) 94%, transparent);
+}
+
+:root[data-nexus-theme="custom"] .topbar-caption,
+:root[data-nexus-theme="custom"] .topbar-kicker,
+:root[data-nexus-theme="custom"] .topbar-account,
+:root[data-nexus-theme="custom"] .section-heading h2,
+:root[data-nexus-theme="custom"] .content-page h1,
+:root[data-nexus-theme="custom"] .metric-label,
+:root[data-nexus-theme="custom"] .metric-detail,
+:root[data-nexus-theme="custom"] .metric-item strong,
+:root[data-nexus-theme="custom"] .activity-row strong,
+:root[data-nexus-theme="custom"] .activity-row p,
+:root[data-nexus-theme="custom"] .theme-settings-header h1,
+:root[data-nexus-theme="custom"] .theme-option-copy strong {
+	color: var(--theme-text);
+}
+
+:root[data-nexus-theme="custom"] .topbar-cart-link,
+:root[data-nexus-theme="custom"] .catalogue-card-view-link,
+:root[data-nexus-theme="custom"] .catalogue-cart-link {
+	border-color: var(--theme-border);
+	color: var(--theme-text);
+	background: var(--theme-surface);
+}
+
+:root[data-nexus-theme="custom"] .topbar-cart-count,
+:root[data-nexus-theme="custom"] .catalogue-cart-link span {
+	color: var(--theme-accent-text);
+	background: var(--theme-accent);
+}
+
+:root[data-nexus-theme="custom"] .welcome-band {
+	color: var(--theme-sidebar-text);
+	background: var(--theme-sidebar);
+}
+
+:root[data-nexus-theme="custom"] .welcome-band .eyebrow,
+:root[data-nexus-theme="custom"] .welcome-copy {
+	color: color-mix(in srgb, var(--theme-sidebar-text) 78%, var(--theme-sidebar));
+}
+
+:root[data-nexus-theme="custom"] .catalogue-primary-button,
+:root[data-nexus-theme="custom"] .login-submit,
+:root[data-nexus-theme="custom"] .theme-option-card.selected .theme-option-check {
+	border-color: var(--theme-accent);
+	color: var(--theme-accent-text);
+	background: var(--theme-accent);
+}
+
+:root[data-nexus-theme="custom"] .catalogue-primary-button:hover:not(:disabled),
+:root[data-nexus-theme="custom"] .catalogue-secondary-button:hover:not(:disabled),
+:root[data-nexus-theme="custom"] .login-submit:hover,
+:root[data-nexus-theme="custom"] .topbar-cart-link:hover,
+:root[data-nexus-theme="custom"] .catalogue-card-view-link:hover,
+:root[data-nexus-theme="custom"] .catalogue-cart-link:hover,
+:root[data-nexus-theme="custom"] .catalogue-buy-now:hover,
+:root[data-nexus-theme="custom"] .sidebar-toggle:hover {
+	border-color: var(--theme-accent-hover);
+	color: var(--theme-hover-text);
+	background: var(--theme-accent-hover);
+}
+
+:root[data-nexus-theme="custom"] .sidebar-link:hover,
+:root[data-nexus-theme="custom"] .profile-link:hover,
+:root[data-nexus-theme="custom"] .theme-option-card:hover,
+:root[data-nexus-theme="custom"] .theme-reset-button:hover,
+:root[data-nexus-theme="custom"] .custom-theme-save-button:hover,
+:root[data-nexus-theme="custom"] .profile-dropdown > button:hover:not(:disabled) {
+	border-color: var(--theme-accent-hover);
+	color: var(--theme-hover-text);
+	background: var(--theme-accent-hover);
+}
+
+:root[data-nexus-theme="custom"] .catalogue-grid-image-button:hover .catalogue-grid-image {
+	border-color: var(--theme-accent-hover);
+}
+
+:root[data-nexus-theme="custom"] .catalogue-category-tag,
+:root[data-nexus-theme="custom"] .catalogue-product-stock,
+:root[data-nexus-theme="custom"] .catalogue-stock-ready {
+	color: var(--theme-text);
+	background: var(--theme-accent-soft);
+}
+
+:root[data-nexus-theme="custom"] .theme-settings-note,
+:root[data-nexus-theme="custom"] .theme-settings-footer,
+:root[data-nexus-theme="custom"] .theme-saved-indicator,
+:root[data-nexus-theme="custom"] .custom-theme-panel,
+:root[data-nexus-theme="custom"] .catalogue-product-card,
+:root[data-nexus-theme="custom"] .cart-items-panel,
+:root[data-nexus-theme="custom"] .cart-summary-panel,
+:root[data-nexus-theme="custom"] .checkout-details-panel,
+:root[data-nexus-theme="custom"] .checkout-order-panel {
+	border-color: var(--theme-border);
+	color: var(--theme-text);
+	background-color: var(--theme-surface);
+}
+
+:root[data-nexus-theme="custom"] .theme-settings-subtitle,
+:root[data-nexus-theme="custom"] .theme-settings-note p,
+:root[data-nexus-theme="custom"] .theme-feedback,
+:root[data-nexus-theme="custom"] .catalogue-page-heading > div > p:last-child,
+:root[data-nexus-theme="custom"] .catalogue-grid-hint {
+	color: var(--theme-muted);
+}
+
+:root[data-nexus-theme="custom"] .catalogue-grid {
+	--ag-border-color: var(--theme-border);
+	--ag-background-color: var(--theme-surface);
+	--ag-foreground-color: var(--theme-text);
+	--ag-header-background-color: var(--theme-page);
+	--ag-header-foreground-color: var(--theme-muted);
+}
+
+:root[data-nexus-theme="custom"] .catalogue-grid-image {
+	border-color: var(--theme-border);
+	background: var(--theme-page);
+}
+
 .topbar-kicker {
 	font-size: 10px;
 	font-weight: 700;
