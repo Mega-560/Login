@@ -10,15 +10,15 @@ export interface CustomThemeColors {
 }
 
 export const defaultCustomTheme: CustomThemeColors = {
-  sidebar: '#193a32',
-  accent: '#d8ed8d',
-  hover: '#cce57a',
-  page: '#f4f5f0',
+  sidebar: '#172033',
+  accent: '#3b82f6',
+  hover: '#2563eb',
+  page: '#f3f6fb',
   surface: '#ffffff',
 }
 
 export const themes = [
-  { id: 'forest', name: 'Forest', description: 'Calm greens and warm neutrals', colors: ['#193a32', '#d8ed8d', '#f4f5f0'] },
+  { id: 'forest', name: 'Blue Steel', description: 'Focused navy with crisp dashboard blue', colors: ['#172033', '#3b82f6', '#f3f6fb'] },
   { id: 'ocean', name: 'Ocean', description: 'Fresh blues and cool surfaces', colors: ['#173b55', '#83d8e5', '#eef5f8'] },
   { id: 'violet', name: 'Violet', description: 'Expressive purple with soft lilac', colors: ['#392b55', '#c8afff', '#f4f1f9'] },
   { id: 'midnight', name: 'Midnight', description: 'Deep contrast for a focused workspace', colors: ['#18212d', '#a8d6bd', '#e9edf1'] },

@@ -4960,3 +4960,165 @@
 		font-size: clamp(2.25rem, 10vw, 2.75rem);
 	}
 }
+
+:root[data-nexus-theme="forest"] {
+	--theme-sidebar: #29221f;
+	--theme-accent: #f0783c;
+	--theme-accent-hover: #df6128;
+	--theme-accent-text: #fff;
+	--theme-hover-text: #fff;
+	--theme-page: #faf6f1;
+	--theme-surface: #fff;
+	--theme-text: #302722;
+	--theme-muted: #7e7068;
+	--theme-border: #ebe2da;
+}
+
+:root[data-nexus-theme="forest"] body,
+:root[data-nexus-theme="forest"] .app-shell,
+:root[data-nexus-theme="forest"] .main-content,
+:root[data-nexus-theme="forest"] .page-content {
+	color: var(--theme-text);
+	background: var(--theme-page);
+}
+
+:root[data-nexus-theme="forest"] .sidebar {
+	background: var(--theme-sidebar);
+}
+
+:root[data-nexus-theme="forest"] .brand-mark,
+:root[data-nexus-theme="forest"] .sidebar-link.active,
+:root[data-nexus-theme="forest"] .login-submit,
+:root[data-nexus-theme="forest"] .catalogue-primary-button,
+:root[data-nexus-theme="forest"] .cart-checkout-button,
+:root[data-nexus-theme="forest"] .checkout-complete-button,
+:root[data-nexus-theme="forest"] .profile-save-button {
+	color: var(--theme-accent-text);
+	background: var(--theme-accent);
+}
+
+:root[data-nexus-theme="forest"] .sidebar-link:hover {
+	color: #fff;
+	background: #40332d;
+}
+
+:root[data-nexus-theme="forest"] .topbar,
+:root[data-nexus-theme="forest"] .metric-grid,
+:root[data-nexus-theme="forest"] .metric-item,
+:root[data-nexus-theme="forest"] .theme-option-card,
+:root[data-nexus-theme="forest"] .catalogue-product-card,
+:root[data-nexus-theme="forest"] .catalogue-inventory-summary article,
+:root[data-nexus-theme="forest"] .cart-items-panel,
+:root[data-nexus-theme="forest"] .cart-summary-panel,
+:root[data-nexus-theme="forest"] .checkout-order-panel {
+	border-color: var(--theme-border);
+	background-color: var(--theme-surface);
+}
+
+:root[data-nexus-theme="forest"] .welcome-band {
+	color: #fff8f3;
+	background: #613820;
+}
+
+:root[data-nexus-theme="forest"] .welcome-band .eyebrow,
+:root[data-nexus-theme="forest"] .flow-label {
+	color: #ffc397;
+}
+
+:root[data-nexus-theme="forest"] .flow-step {
+	background: #70452d;
+}
+
+:root[data-nexus-theme="forest"] .flow-current {
+	border-color: #ffb078;
+	background: #8a4c2b;
+}
+
+:root[data-nexus-theme="forest"] .metric-highlight {
+	background: #fff0e5;
+}
+
+:root[data-nexus-theme="forest"] .text-link,
+:root[data-nexus-theme="forest"] .catalogue-buy-now,
+:root[data-nexus-theme="forest"] .catalogue-product-title:hover,
+:root[data-nexus-theme="forest"] .section-heading h2 {
+	color: #b94f20;
+}
+
+:root[data-nexus-theme="forest"] .catalogue-primary-button {
+	border-color: var(--theme-accent);
+}
+
+:root[data-nexus-theme="forest"] .catalogue-primary-button:hover:not(:disabled),
+:root[data-nexus-theme="forest"] .cart-checkout-button:hover:not(:disabled),
+:root[data-nexus-theme="forest"] .checkout-complete-button:hover:not(:disabled),
+:root[data-nexus-theme="forest"] .profile-save-button:hover:not(:disabled) {
+	border-color: var(--theme-accent-hover);
+	background: var(--theme-accent-hover);
+}
+
+:root[data-nexus-theme="forest"] .catalogue-card-image-button {
+	background: linear-gradient(140deg, #fff5eb, #f3e7da);
+}
+
+:root[data-nexus-theme="forest"] .catalogue-card-select input {
+	accent-color: var(--theme-accent);
+}
+
+:root[data-nexus-theme="forest"] .metric-item strong,
+:root[data-nexus-theme="forest"] .activity-row strong {
+	color: #392a22;
+}
+
+:root[data-nexus-theme="forest"] .activity-row,
+:root[data-nexus-theme="forest"] .metric-item + .metric-item {
+	border-color: var(--theme-border);
+}
+
+:root[data-nexus-theme="forest"] .topbar-cart-count {
+	color: #fff;
+	background: var(--theme-accent);
+}
+
+.welcome-band h1,
+.content-page h1,
+.catalogue-page-heading h1 {
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: var(--type-display-tracking);
+	line-height: var(--type-display-line);
+}
+
+.section-heading h2,
+.about-columns h2,
+.contact-layout h2,
+.catalogue-table-heading h2 {
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: -0.015em;
+	line-height: 1.25;
+}
+
+.welcome-copy,
+.section-heading > p,
+.activity-row p,
+.catalogue-page-heading > div > p:last-child,
+.content-page p {
+	line-height: var(--type-body-line);
+}
+
+.welcome-copy,
+.catalogue-page-heading > div > p:last-child {
+	font-size: var(--type-caption-size);
+}
+
+.eyebrow {
+	font-size: var(--type-label-size);
+}
+
+.metric-item strong,
+.catalogue-product-meta > strong,
+.cart-summary-total strong,
+.checkout-order-total strong {
+	font-variant-numeric: tabular-nums;
+}

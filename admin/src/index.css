@@ -1,10 +1,16 @@
 :root {
-  --font-sans: "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-sans);
+  --type-body-size: 0.875rem;
+  --type-caption-size: 0.8125rem;
+  --type-label-size: 0.6875rem;
+  --type-heading-line: 1.2;
+  --type-body-line: 1.55;
+  --type-heading-tracking: -0.035em;
   font-family: var(--font-sans);
   font-size: 16px;
-  color: #202a26;
-  background: #f4f5f0;
+  color: #1e293b;
+  background: #f3f6fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,6 +28,9 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
 }
 
 button,
@@ -39,6 +48,6 @@ a {
 }
 
 ::selection {
-  color: #193a32;
-  background: #d8ed8d;
+  color: #172033;
+  background: #bfdbfe;
 }

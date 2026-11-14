@@ -27,6 +27,16 @@ function downloadChart(chart: ExportableChart | null, filename: string) {
   link.click()
 }
 
+function DownloadIcon() {
+  return (
+    <svg className="admin-chart-export-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 2.5v7" />
+      <path d="m5.25 7.25 2.75 2.75 2.75-2.75" />
+      <path d="M3 11v2h10v-2" />
+    </svg>
+  )
+}
+
 ChartJS.register(
   ArcElement,
   BarElement,
@@ -62,8 +72,8 @@ const salesData = {
   datasets: [{
     label: 'Sales (USD)',
     data: [15800, 19400, 17250, 23100, 21800, 24860],
-    borderColor: '#39765a',
-    backgroundColor: 'rgba(95, 155, 112, 0.14)',
+    borderColor: '#3b82f6',
+    backgroundColor: 'rgba(59, 130, 246, 0.14)',
     fill: true,
     tension: 0.38,
     pointRadius: 3,
@@ -76,7 +86,7 @@ const ordersData = {
   datasets: [{
     label: 'Orders',
     data: [118, 142, 131, 167, 159, 186],
-    backgroundColor: '#83a98c',
+    backgroundColor: '#6f9ef5',
     borderRadius: 4,
     maxBarThickness: 32,
   }],
@@ -87,7 +97,7 @@ const inventoryData = {
   datasets: [{
     label: 'Units in stock',
     data: inventory.map(({ units }) => units),
-    backgroundColor: ['#49785b', '#93ac7b', '#6c91a0', '#b3a36a'],
+    backgroundColor: ['#3b82f6', '#72a9ed', '#5a759e', '#96b8dc'],
     borderRadius: 4,
     maxBarThickness: 30,
   }],
@@ -97,7 +107,7 @@ const orderStatusData = {
   labels: ['Delivered', 'Processing', 'Pending', 'Cancelled'],
   datasets: [{
     data: [112, 38, 27, 9],
-    backgroundColor: ['#548365', '#8ba9ba', '#e4bd70', '#c98576'],
+    backgroundColor: ['#3b82f6', '#61a4e8', '#e4bd70', '#c98576'],
     borderColor: '#ffffff',
     borderWidth: 3,
     hoverOffset: 5,
@@ -226,7 +236,7 @@ function DashboardPage() {
             <div><h2>Sales overview</h2><p>Monthly revenue · USD</p></div>
             <div className="admin-chart-actions">
               <span className="admin-chart-badge">Sales</span>
-              <button type="button" className="admin-chart-export" onClick={() => downloadChart(salesChart.current, 'sales-overview')}>Export PNG</button>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(salesChart.current, 'sales-overview')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-sales-chart">
@@ -239,7 +249,7 @@ function DashboardPage() {
             <div><h2>Inventory by category</h2><p>Available units by product type</p></div>
             <div className="admin-chart-actions">
               <span className="admin-chart-badge">Stock</span>
-              <button type="button" className="admin-chart-export" onClick={() => downloadChart(inventoryChart.current, 'inventory-by-category')}>Export PNG</button>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(inventoryChart.current, 'inventory-by-category')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-inventory-chart">
@@ -252,7 +262,7 @@ function DashboardPage() {
             <div><h2>Order activity</h2><p>Orders placed each month</p></div>
             <div className="admin-chart-actions">
               <span className="admin-chart-badge">Orders</span>
-              <button type="button" className="admin-chart-export" onClick={() => downloadChart(ordersChart.current, 'order-activity')}>Export PNG</button>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(ordersChart.current, 'order-activity')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-orders-chart">
@@ -265,7 +275,7 @@ function DashboardPage() {
             <div><h2>Order status</h2><p>Breakdown of sample orders</p></div>
             <div className="admin-chart-actions">
               <span className="admin-chart-badge">Fulfilment</span>
-              <button type="button" className="admin-chart-export" onClick={() => downloadChart(orderStatusChart.current, 'order-status')}>Export PNG</button>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(orderStatusChart.current, 'order-status')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-status-chart">
