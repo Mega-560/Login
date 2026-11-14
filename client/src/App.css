@@ -2501,6 +2501,9 @@
 }
 
 .topbar-account {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	min-height: 42px;
 	padding: 4px 7px;
 	border: 1px solid transparent;
@@ -2517,9 +2520,17 @@
 }
 
 .topbar-profile-caret {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 12px;
+	height: 12px;
 	margin-left: 3px;
 	color: #77847b;
 	font-size: 14px;
+	line-height: 1;
+	transform: translateY(-1px);
+	flex-shrink: 0;
 }
 
 .avatar {

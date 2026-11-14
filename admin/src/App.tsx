@@ -17,6 +17,7 @@ import './App.css'
 
 const DashboardPage = lazy(() => import('./components/DashboardPage'))
 const StateMapPage = lazy(() => import('./components/StateMapPage'))
+const CataloguePage = lazy(() => import('./components/CataloguePage'))
 
 function App() {
   return (
@@ -38,6 +39,14 @@ function App() {
             <Route path="users" element={<AdminPage />} />
             <Route path="roles" element={<RolePage />} />
             <Route path="calendar" element={<CalendarPage />} />
+            <Route
+              path="catalogue"
+              element={(
+                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading catalogue…</div>}>
+                  <CataloguePage />
+                </Suspense>
+              )}
+            />
             <Route
               path="state-map"
               element={(

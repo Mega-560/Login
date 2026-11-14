@@ -71,7 +71,8 @@ function StateMapPage() {
   const map = useRef<google.maps.Map | null>(null)
   const markers = useRef(new Map<string, google.maps.Marker>())
   const markerListeners = useRef<google.maps.MapsEventListener[]>([])
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
+  const rawApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
+  const apiKey = rawApiKey
   const estimatedRevenue = selectedRegion.orders * 18500
 
   useEffect(() => {
@@ -193,12 +194,14 @@ function StateMapPage() {
               : (
                 <div className="india-map-message">
                   <strong>Google Maps API key required</strong>
-                  <span>Add <code>VITE_GOOGLE_MAPS_API_KEY</code> to <code>admin/.env.local</code>, then restart the admin app.</span>
+                  <span>
+                    Add a valid VITE_GOOGLE_MAPS_API_KEY to admin/.env.local, then restart the admin app.
+                  </span>
                 </div>
               )}
             {mapError && <p className="india-map-error" role="alert">{mapError}</p>}
           </div>
-          <p className="india-map-hint">Click a marker, or use the region menu below to explore each location.</p>
+          <p className="india-map-hint">Click a marker, or use the region menu above to explore each location.</p>
         </section>
 
         <aside className="india-detail-panel" aria-live="polite">
@@ -218,25 +221,6 @@ function StateMapPage() {
         </aside>
       </div>
 
-      <section className="india-region-list" aria-labelledby="india-region-list-title">
-        <div className="india-region-list-heading">
-          <div><h2 id="india-region-list-title">All states and union territories</h2><p>Select a region to update the map and overview.</p></div>
-          <span>{regions.length} total</span>
-        </div>
-        <div className="india-region-buttons">
-          {regions.map((region) => (
-            <button
-              key={region.code}
-              type="button"
-              className={selectedRegion.code === region.code ? 'active' : ''}
-              aria-pressed={selectedRegion.code === region.code}
-              onClick={() => setSelectedRegion(region)}
-            >
-              <span>{region.code}</span>{region.name}
-            </button>
-          ))}
-        </div>
-      </section>
     </section>
   )
 }
