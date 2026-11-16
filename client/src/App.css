@@ -5694,9 +5694,7 @@
 	box-shadow: 0 12px 30px color-mix(in srgb, var(--theme-accent-hover, #E68A00) 15%, transparent);
 }
 
-:root[data-nexus-theme] .catalogue-product-title:hover,
-:root[data-nexus-theme] .catalogue-card-view-link:hover,
-:root[data-nexus-theme] .catalogue-cart-link:hover {
+:root[data-nexus-theme] .catalogue-product-title:hover {
 	color: var(--theme-accent-hover, #E68A00);
 }
 

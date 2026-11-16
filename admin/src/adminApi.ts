@@ -52,12 +52,36 @@ export interface CustomerOrder {
   customerEmail: string
   shippingAddress: string
   status: 'pending' | 'confirmed' | 'fulfilled' | 'cancelled'
+  shippingStatus: 'not_shipped' | 'preparing' | 'shipped' | 'in_transit' | 'delivered' | 'exception'
+  shippingCarrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  estimatedDelivery: string | null
+  partnerId: string | null
+  partnerName: string | null
+  partnerType: 'dealer' | 'retailer' | null
   paymentStatus: 'due' | 'paid' | 'refunded'
   currency: 'USD'
   subtotal: number
   createdAt: number
   items: Array<{ partId: string; partName: string; unitPrice: number; quantity: number }>
 }
+
+export interface AdminBusinessPartner {
+  id: string
+  name: string
+  type: 'dealer' | 'retailer'
+  contactName: string
+  email: string
+  phone: string
+  address: string
+  notes: string
+  active: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export type BusinessPartnerInput = Omit<AdminBusinessPartner, 'id' | 'active' | 'createdAt' | 'updatedAt'>
 
 export class AdminApiError extends Error {
   readonly status: number
@@ -154,4 +178,17 @@ export const adminApi = {
   getOrders: async () => (await request<{ orders: CustomerOrder[] }>('GET', '/orders')).orders,
   updateOrderStatus: async (id: string, status: CustomerOrder['status']) =>
     (await request<{ order: CustomerOrder }>('PATCH', `/orders/${encodeURIComponent(id)}/status`, { status })).order,
+  updateOrderLogistics: async (id: string, logistics: {
+    shippingStatus: CustomerOrder['shippingStatus']
+    shippingCarrier: string
+    trackingNumber: string
+    trackingUrl: string
+    estimatedDelivery: string
+    partnerId: string
+  }) => (await request<{ order: CustomerOrder }>('PATCH', `/orders/${encodeURIComponent(id)}/logistics`, logistics)).order,
+  getBusinessPartners: async () => (await request<{ partners: AdminBusinessPartner[] }>('GET', '/partners')).partners,
+  saveBusinessPartner: async (partner: BusinessPartnerInput, id?: string) =>
+    (await request<{ partner: AdminBusinessPartner }>(id ? 'PUT' : 'POST', id ? `/partners/${encodeURIComponent(id)}` : '/partners', partner)).partner,
+  setBusinessPartnerActive: (id: string, active: boolean) =>
+    request<{ success: boolean }>('PATCH', `/partners/${encodeURIComponent(id)}/active`, { active }),
 }

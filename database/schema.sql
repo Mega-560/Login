@@ -66,6 +66,23 @@ CREATE TABLE IF NOT EXISTS catalogue_manuals (
   created_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS business_partners (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('dealer', 'retailer')),
+  contact_name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS business_partners_type_active_idx
+  ON business_partners (type, active, name);
+
 CREATE TABLE IF NOT EXISTS customer_orders (
   id TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id),
@@ -73,6 +90,12 @@ CREATE TABLE IF NOT EXISTS customer_orders (
   customer_email TEXT NOT NULL,
   shipping_address TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'fulfilled', 'cancelled')),
+  shipping_status TEXT NOT NULL DEFAULT 'not_shipped' CHECK (shipping_status IN ('not_shipped', 'preparing', 'shipped', 'in_transit', 'delivered', 'exception')),
+  shipping_carrier TEXT,
+  tracking_number TEXT,
+  tracking_url TEXT,
+  estimated_delivery TEXT,
+  partner_id TEXT REFERENCES business_partners(id) ON DELETE SET NULL,
   payment_status TEXT NOT NULL DEFAULT 'due' CHECK (payment_status IN ('due', 'paid', 'refunded')),
   currency TEXT NOT NULL DEFAULT 'USD' CHECK (currency = 'USD'),
   subtotal REAL NOT NULL CHECK (subtotal >= 0),

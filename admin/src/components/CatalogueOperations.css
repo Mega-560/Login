@@ -256,6 +256,102 @@
   gap: 8px 20px;
 }
 
+.catalogue-logistics-form {
+  display: grid;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid var(--theme-border, #e3e6df);
+  border-radius: 5px;
+  background: var(--theme-page, #f8faf6);
+}
+
+.catalogue-logistics-form h3 {
+  margin: 0;
+  color: var(--theme-text, #28372f);
+  font-size: 13px;
+}
+
+.catalogue-logistics-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.catalogue-logistics-fields label,
+.partner-form-fields label {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  color: var(--theme-text, #35443c);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.catalogue-logistics-fields input,
+.catalogue-logistics-fields select,
+.partner-form-fields input,
+.partner-form-fields select,
+.partner-form-fields textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid var(--theme-border, #d9e0d8);
+  border-radius: 4px;
+  color: var(--theme-text, #28372f);
+  background: var(--theme-surface, #fff);
+  font: inherit;
+  font-size: 11px;
+}
+
+.partner-form-fields textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.partner-form-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.partner-form-notes {
+  grid-column: 1 / -1;
+}
+
+.partner-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.catalogue-logistics-form > button,
+.partner-form-actions button {
+  justify-self: start;
+  min-height: 34px;
+  padding: 6px 11px;
+  border: 1px solid var(--theme-border, #d9e0d8);
+  border-radius: 4px;
+  color: var(--theme-text, #416c5a);
+  background: var(--theme-surface, #fff);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.catalogue-logistics-form > button:hover:not(:disabled),
+.partner-form-actions button:hover:not(:disabled) {
+  color: var(--theme-hover-text, #fff);
+  background: var(--theme-accent-hover, #416c5a);
+}
+
+.catalogue-logistics-form > button:disabled,
+.partner-form-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .catalogue-order-items {
   display: grid;
   gap: 7px;
@@ -298,10 +394,26 @@
   .catalogue-order-badges {
     justify-content: flex-start;
   }
+
+  .catalogue-logistics-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .partner-form-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 500px) {
   .catalogue-part-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-logistics-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .partner-form-fields {
     grid-template-columns: 1fr;
   }
 }

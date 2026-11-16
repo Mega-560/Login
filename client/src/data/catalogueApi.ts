@@ -29,6 +29,14 @@ export interface CustomerOrder {
   customerEmail: string
   shippingAddress: string
   status: 'pending' | 'confirmed' | 'fulfilled' | 'cancelled'
+  shippingStatus: 'not_shipped' | 'preparing' | 'shipped' | 'in_transit' | 'delivered' | 'exception'
+  shippingCarrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  estimatedDelivery: string | null
+  partnerId: string | null
+  partnerName: string | null
+  partnerType: 'dealer' | 'retailer' | null
   paymentStatus: 'due' | 'paid' | 'refunded'
   currency: 'USD'
   subtotal: number

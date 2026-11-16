@@ -11,6 +11,21 @@ database.pragma('journal_mode = WAL')
 database.pragma('foreign_keys = ON')
 database.exec(readFileSync(fileURLToPath(new URL('./schema.sql', import.meta.url)), 'utf8'))
 
+const orderColumnsPresent = new Set(
+  (database.prepare("SELECT name FROM pragma_table_info('customer_orders')").all() as { name: string }[]).map(({ name }) => name),
+)
+const orderColumnMigrations: Array<[string, string]> = [
+  ['shipping_status', "TEXT NOT NULL DEFAULT 'not_shipped' CHECK (shipping_status IN ('not_shipped', 'preparing', 'shipped', 'in_transit', 'delivered', 'exception'))"],
+  ['shipping_carrier', 'TEXT'],
+  ['tracking_number', 'TEXT'],
+  ['tracking_url', 'TEXT'],
+  ['estimated_delivery', 'TEXT'],
+  ['partner_id', 'TEXT REFERENCES business_partners(id) ON DELETE SET NULL'],
+]
+for (const [name, definition] of orderColumnMigrations) {
+  if (!orderColumnsPresent.has(name)) database.exec(`ALTER TABLE customer_orders ADD COLUMN ${name} ${definition}`)
+}
+
 if (!database.prepare("SELECT 1 FROM pragma_table_info('users') WHERE name = 'role'").get()) {
   database.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin'))")
 }
@@ -81,11 +96,44 @@ export interface CustomerOrder {
   customerEmail: string
   shippingAddress: string
   status: 'pending' | 'confirmed' | 'fulfilled' | 'cancelled'
+  shippingStatus: 'not_shipped' | 'preparing' | 'shipped' | 'in_transit' | 'delivered' | 'exception'
+  shippingCarrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  estimatedDelivery: string | null
+  partnerId: string | null
+  partnerName: string | null
+  partnerType: BusinessPartner['type'] | null
   paymentStatus: 'due' | 'paid' | 'refunded'
   currency: 'USD'
   subtotal: number
   createdAt: number
   items: OrderItem[]
+}
+
+export interface BusinessPartner {
+  id: string
+  name: string
+  type: 'dealer' | 'retailer'
+  contactName: string
+  email: string
+  phone: string
+  address: string
+  notes: string
+  active: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export type BusinessPartnerInput = Omit<BusinessPartner, 'id' | 'active' | 'createdAt' | 'updatedAt'>
+
+export interface OrderLogisticsInput {
+  shippingStatus: CustomerOrder['shippingStatus']
+  shippingCarrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  estimatedDelivery: string | null
+  partnerId: string | null
 }
 
 const starterParts: CataloguePartInput[] = [
@@ -159,6 +207,43 @@ export function setCataloguePartActive(id: string, active: boolean): boolean {
     .run(Number(active), Date.now(), id).changes === 1
 }
 
+const businessPartnerColumns = `
+  id, name, type, contact_name AS contactName, email, phone, address, notes,
+  active, created_at AS createdAt, updated_at AS updatedAt
+`
+
+function businessPartnerFromRow(row: Omit<BusinessPartner, 'active'> & { active: number }): BusinessPartner {
+  return { ...row, active: row.active === 1 }
+}
+
+export function listBusinessPartners(includeInactive = true): BusinessPartner[] {
+  const rows = includeInactive
+    ? database.prepare(`SELECT ${businessPartnerColumns} FROM business_partners ORDER BY type, name`).all()
+    : database.prepare(`SELECT ${businessPartnerColumns} FROM business_partners WHERE active = 1 ORDER BY type, name`).all()
+  return (rows as Array<Parameters<typeof businessPartnerFromRow>[0]>).map(businessPartnerFromRow)
+}
+
+export function saveBusinessPartner(id: string, partner: BusinessPartnerInput): BusinessPartner {
+  const now = Date.now()
+  database.prepare(`
+    INSERT INTO business_partners
+      (id, name, type, contact_name, email, phone, address, notes, active, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      name = excluded.name, type = excluded.type, contact_name = excluded.contact_name,
+      email = excluded.email, phone = excluded.phone, address = excluded.address,
+      notes = excluded.notes, updated_at = excluded.updated_at
+  `).run(id, partner.name, partner.type, partner.contactName, partner.email, partner.phone, partner.address, partner.notes, now, now)
+  const saved = database.prepare(`SELECT ${businessPartnerColumns} FROM business_partners WHERE id = ?`).get(id)
+  if (!saved) throw new Error('Saved business partner could not be loaded.')
+  return businessPartnerFromRow(saved as Parameters<typeof businessPartnerFromRow>[0])
+}
+
+export function setBusinessPartnerActive(id: string, active: boolean): boolean {
+  return database.prepare('UPDATE business_partners SET active = ?, updated_at = ? WHERE id = ?')
+    .run(Number(active), Date.now(), id).changes === 1
+}
+
 export function listManualCategories(): ManualCategory[] {
   return database.prepare(`
     SELECT id, parent_id AS parentId, name, created_at AS createdAt
@@ -211,10 +296,16 @@ const readOrderItems = database.prepare<[string], OrderItem>(`
 `)
 
 const orderColumns = `
-  id, user_id AS userId, customer_name AS customerName, customer_email AS customerEmail,
-  shipping_address AS shippingAddress, status, payment_status AS paymentStatus,
-  currency, subtotal, created_at AS createdAt
+  orders.id, orders.user_id AS userId, orders.customer_name AS customerName, orders.customer_email AS customerEmail,
+  orders.shipping_address AS shippingAddress, orders.status,
+  orders.shipping_status AS shippingStatus, orders.shipping_carrier AS shippingCarrier,
+  orders.tracking_number AS trackingNumber, orders.tracking_url AS trackingUrl,
+  orders.estimated_delivery AS estimatedDelivery, orders.partner_id AS partnerId,
+  partners.name AS partnerName, partners.type AS partnerType,
+  orders.payment_status AS paymentStatus, orders.currency, orders.subtotal, orders.created_at AS createdAt
 `
+
+const orderJoin = 'FROM customer_orders orders LEFT JOIN business_partners partners ON partners.id = orders.partner_id'
 
 function withOrderItems(row: Omit<CustomerOrder, 'items'>): CustomerOrder {
   return { ...row, items: readOrderItems.all(row.id) }
@@ -222,13 +313,13 @@ function withOrderItems(row: Omit<CustomerOrder, 'items'>): CustomerOrder {
 
 export function listCustomerOrders(userId?: number): CustomerOrder[] {
   const rows = userId === undefined
-    ? database.prepare(`SELECT ${orderColumns} FROM customer_orders ORDER BY created_at DESC`).all()
-    : database.prepare(`SELECT ${orderColumns} FROM customer_orders WHERE user_id = ? ORDER BY created_at DESC`).all(userId)
+    ? database.prepare(`SELECT ${orderColumns} ${orderJoin} ORDER BY orders.created_at DESC`).all()
+    : database.prepare(`SELECT ${orderColumns} ${orderJoin} WHERE orders.user_id = ? ORDER BY orders.created_at DESC`).all(userId)
   return (rows as Array<Omit<CustomerOrder, 'items'>>).map(withOrderItems)
 }
 
 export const placeCustomerOrder = database.transaction(
-  (order: Omit<CustomerOrder, 'items' | 'createdAt' | 'currency' | 'paymentStatus' | 'subtotal' | 'status'>, items: OrderItemInput[]) => {
+  (order: Pick<CustomerOrder, 'id' | 'userId' | 'customerName' | 'customerEmail' | 'shippingAddress'>, items: OrderItemInput[]) => {
     const inventory = database.prepare('SELECT id, name, price, stock, active FROM catalogue_parts WHERE id = ?')
     const orderItemInsert = database.prepare(`
       INSERT INTO customer_order_items (order_id, part_id, part_name, unit_price, quantity)
@@ -258,7 +349,7 @@ export const placeCustomerOrder = database.transaction(
       orderItemInsert.run(order.id, item.partId, item.partName, item.unitPrice, item.quantity)
     }
 
-    const saved = database.prepare(`SELECT ${orderColumns} FROM customer_orders WHERE id = ?`).get(order.id) as Omit<CustomerOrder, 'items'>
+    const saved = database.prepare(`SELECT ${orderColumns} ${orderJoin} WHERE orders.id = ?`).get(order.id) as Omit<CustomerOrder, 'items'>
     return withOrderItems(saved)
   },
 )
@@ -275,6 +366,35 @@ export const updateCustomerOrderStatus = database.transaction(
       for (const item of items) restoreStock.run(item.quantity, Date.now(), item.partId)
     }
     database.prepare('UPDATE customer_orders SET status = ? WHERE id = ?').run(status, id)
+    return 'updated' as const
+  },
+)
+
+export const updateCustomerOrderLogistics = database.transaction(
+  (id: string, logistics: OrderLogisticsInput) => {
+    const order = database.prepare('SELECT status FROM customer_orders WHERE id = ?').get(id) as { status: CustomerOrder['status'] } | undefined
+    if (!order) return 'missing' as const
+    if (order.status === 'cancelled') return 'invalid' as const
+    if (logistics.partnerId) {
+      const partner = database.prepare('SELECT id FROM business_partners WHERE id = ?').get(logistics.partnerId)
+      if (!partner) return 'invalid_partner' as const
+    }
+    database.prepare(`
+      UPDATE customer_orders SET
+        shipping_status = ?, status = CASE WHEN ? = 'delivered' THEN 'fulfilled' ELSE status END,
+        shipping_carrier = ?, tracking_number = ?,
+        tracking_url = ?, estimated_delivery = ?, partner_id = ?
+      WHERE id = ?
+    `).run(
+      logistics.shippingStatus,
+      logistics.shippingStatus,
+      logistics.shippingCarrier,
+      logistics.trackingNumber,
+      logistics.trackingUrl,
+      logistics.estimatedDelivery,
+      logistics.partnerId,
+      id,
+    )
     return 'updated' as const
   },
 )

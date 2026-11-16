@@ -21,6 +21,7 @@ const StateMapPage = lazy(() => import('./components/StateMapPage'))
 const CataloguePage = lazy(() => import('./components/CataloguePage'))
 const CataloguePartsPage = lazy(() => import('./components/CataloguePartsPage'))
 const CatalogueOrdersPage = lazy(() => import('./components/CatalogueOrdersPage'))
+const BusinessPartnersPage = lazy(() => import('./components/BusinessPartnersPage'))
 
 function App() {
   return (
@@ -55,6 +56,14 @@ function App() {
               element={(
                 <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading customer orders…</div>}>
                   <CatalogueOrdersPage />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="partners"
+              element={(
+                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading business partners…</div>}>
+                  <BusinessPartnersPage />
                 </Suspense>
               )}
             />

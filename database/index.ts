@@ -30,17 +30,23 @@ import {
   createManualCategory,
   deleteCatalogueManual,
   getCatalogueManualFile,
+  listBusinessPartners,
   listCatalogueManuals,
   listCustomerOrders,
   listManualCategories,
   listCatalogueParts,
   placeCustomerOrder,
+  saveBusinessPartner,
   saveCatalogueManual,
   saveCataloguePart,
+  setBusinessPartnerActive,
   setCataloguePartActive,
+  updateCustomerOrderLogistics,
   updateCustomerOrderStatus,
+  type BusinessPartnerInput,
   type CataloguePartInput,
   type CustomerOrder,
+  type OrderLogisticsInput,
   type OrderItemInput,
 } from './database.js'
 import type { AuthUser } from './database.js'
@@ -185,6 +191,23 @@ function routeParam(value: string | string[] | undefined): string | undefined {
 function readText(body: unknown, key: string): string | undefined {
   if (!isRecord(body) || typeof body[key] !== 'string') return undefined
   return body[key].trim()
+}
+
+function readBusinessPartnerInput(body: unknown): BusinessPartnerInput | undefined {
+  const name = readText(body, 'name')
+  const type = isRecord(body) ? body.type : undefined
+  const contactName = readText(body, 'contactName') ?? ''
+  const emailValue = readText(body, 'email') ?? ''
+  const phone = readText(body, 'phone') ?? ''
+  const address = readText(body, 'address') ?? ''
+  const notes = readText(body, 'notes') ?? ''
+  const email = emailValue ? normalizeEmail(emailValue) : ''
+  if (
+    !name || name.length > 120 || (type !== 'dealer' && type !== 'retailer')
+    || contactName.length > 120 || email === undefined || phone.length > 40
+    || address.length > 500 || notes.length > 1_000
+  ) return undefined
+  return { name, type, contactName, email, phone, address, notes }
 }
 
 function readString(body: unknown, key: string): string | undefined {
@@ -801,6 +824,112 @@ app.patch('/api/admin/orders/:id/status', requireSession, requireAdmin, (req, re
   const order = listCustomerOrders().find(({ id }) => id === orderId)
   if (!order) throw new Error('Updated order could not be loaded.')
   res.json({ order })
+})
+
+app.patch('/api/admin/orders/:id/logistics', requireSession, requireAdmin, (req, res) => {
+  const orderId = routeParam(req.params.id)
+  const shippingStatus = isRecord(req.body) ? req.body.shippingStatus : undefined
+  const validStatuses: CustomerOrder['shippingStatus'][] = ['not_shipped', 'preparing', 'shipped', 'in_transit', 'delivered', 'exception']
+  const shippingCarrier = readText(req.body, 'shippingCarrier') ?? ''
+  const trackingNumber = readText(req.body, 'trackingNumber') ?? ''
+  const trackingUrl = readText(req.body, 'trackingUrl') ?? ''
+  const estimatedDelivery = readText(req.body, 'estimatedDelivery') ?? ''
+  const partnerIdValue = readText(req.body, 'partnerId') ?? ''
+
+  if (!orderId || !validStatuses.includes(shippingStatus as CustomerOrder['shippingStatus'])) {
+    res.status(400).json({ error: 'Provide a valid order ID and shipping status.' })
+    return
+  }
+  if (
+    shippingCarrier.length > 100 || trackingNumber.length > 120 || trackingUrl.length > 500
+    || estimatedDelivery && !/^\d{4}-\d{2}-\d{2}$/.test(estimatedDelivery)
+    || partnerIdValue && !/^BP-[A-F0-9]{16}$/.test(partnerIdValue)
+  ) {
+    res.status(400).json({ error: 'One or more shipping or partner fields are invalid.' })
+    return
+  }
+  if (estimatedDelivery) {
+    const parsedDate = new Date(`${estimatedDelivery}T00:00:00.000Z`)
+    if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== estimatedDelivery) {
+      res.status(400).json({ error: 'Provide a valid estimated delivery date.' })
+      return
+    }
+  }
+  if (trackingUrl) {
+    try {
+      const url = new URL(trackingUrl)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Unsupported protocol')
+    } catch {
+      res.status(400).json({ error: 'Tracking URL must be a valid HTTP or HTTPS URL.' })
+      return
+    }
+  }
+
+  const result = updateCustomerOrderLogistics(orderId, {
+    shippingStatus: shippingStatus as CustomerOrder['shippingStatus'],
+    shippingCarrier: shippingCarrier || null,
+    trackingNumber: trackingNumber || null,
+    trackingUrl: trackingUrl || null,
+    estimatedDelivery: estimatedDelivery || null,
+    partnerId: partnerIdValue || null,
+  } satisfies OrderLogisticsInput)
+  if (result === 'missing') {
+    res.status(404).json({ error: 'Order not found.' })
+    return
+  }
+  if (result === 'invalid_partner') {
+    res.status(400).json({ error: 'Choose an active dealer or retailer.' })
+    return
+  }
+  if (result === 'invalid') {
+    res.status(409).json({ error: 'Shipping details cannot be changed for a cancelled order.' })
+    return
+  }
+  const order = listCustomerOrders().find(({ id }) => id === orderId)
+  if (!order) throw new Error('Updated order could not be loaded.')
+  res.json({ order })
+})
+
+app.get('/api/admin/partners', requireSession, requireAdmin, (_req, res) => {
+  res.json({ partners: listBusinessPartners() })
+})
+
+app.post('/api/admin/partners', requireSession, requireAdmin, (req, res) => {
+  const input = readBusinessPartnerInput(req.body)
+  if (!input) {
+    res.status(400).json({ error: 'Provide a name and valid dealer or retailer details.' })
+    return
+  }
+  const partner = saveBusinessPartner(`BP-${randomBytes(8).toString('hex').toUpperCase()}`, input)
+  res.status(201).json({ partner })
+})
+
+app.put('/api/admin/partners/:id', requireSession, requireAdmin, (req, res) => {
+  const id = routeParam(req.params.id)
+  const input = readBusinessPartnerInput(req.body)
+  if (!id || !/^BP-[A-F0-9]{16}$/.test(id) || !input) {
+    res.status(400).json({ error: 'Provide a valid partner ID and dealer or retailer details.' })
+    return
+  }
+  if (!listBusinessPartners().some((partner) => partner.id === id)) {
+    res.status(404).json({ error: 'Business partner not found.' })
+    return
+  }
+  res.json({ partner: saveBusinessPartner(id, input) })
+})
+
+app.patch('/api/admin/partners/:id/active', requireSession, requireAdmin, (req, res) => {
+  const id = routeParam(req.params.id)
+  const active = isRecord(req.body) ? req.body.active : undefined
+  if (!id || !/^BP-[A-F0-9]{16}$/.test(id) || typeof active !== 'boolean') {
+    res.status(400).json({ error: 'Provide a valid partner ID and active state.' })
+    return
+  }
+  if (!setBusinessPartnerActive(id, active)) {
+    res.status(404).json({ error: 'Business partner not found.' })
+    return
+  }
+  res.json({ success: true })
 })
 
 app.post('/api/auth/logout', requireSession, (_req, res) => {

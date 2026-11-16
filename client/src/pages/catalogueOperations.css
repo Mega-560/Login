@@ -178,6 +178,29 @@
   gap: 6px;
 }
 
+.client-order-shipment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--theme-border, #e1e6df);
+  border-radius: 4px;
+  color: var(--theme-muted, #748078);
+  background: var(--theme-page, #f8faf6);
+  font-size: 11px;
+}
+
+.client-order-shipment strong {
+  color: var(--theme-text, #28372f);
+  text-transform: capitalize;
+}
+
+.client-order-shipment a {
+  color: var(--theme-accent, #416c5a);
+  font-weight: 700;
+}
+
 .client-order-status {
   padding: 4px 8px;
   border-radius: 20px;

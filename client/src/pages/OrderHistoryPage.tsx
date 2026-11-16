@@ -42,6 +42,14 @@ function OrderHistoryPage() {
             {orders.map((order) => (
               <article className="client-order-card" key={order.id}>
                 <header><div><p className="eyebrow">ORDER {order.id}</p><h2>{dateTime.format(new Date(order.createdAt))}</h2></div><div className="client-order-statuses"><span className={`client-order-status status-${order.status}`}>{order.status}</span><span className="client-order-status">Payment {order.paymentStatus}</span></div></header>
+                <section className="client-order-shipment" aria-label="Shipping and tracking">
+                  <strong>Shipping: {order.shippingStatus.replaceAll('_', ' ')}</strong>
+                  {order.shippingCarrier && <span>Carrier: {order.shippingCarrier}</span>}
+                  {order.trackingNumber && <span>Tracking number: {order.trackingNumber}</span>}
+                  {order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noreferrer">Track shipment <span aria-hidden="true">↗</span></a>}
+                  {order.estimatedDelivery && <span>Estimated delivery: {new Date(`${order.estimatedDelivery}T00:00:00`).toLocaleDateString()}</span>}
+                  {order.partnerName && <span>Fulfilled through: {order.partnerName} ({order.partnerType})</span>}
+                </section>
                 <ul>
                   {order.items.map((item) => <li key={item.partId}><span>{item.partName} <small>{item.partId} · {item.quantity} × {catalogueCurrency.format(item.unitPrice)}</small></span><strong>{catalogueCurrency.format(item.unitPrice * item.quantity)}</strong></li>)}
                 </ul>
