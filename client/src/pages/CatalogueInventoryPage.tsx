@@ -12,7 +12,8 @@ import {
 import { AgGridReact } from 'ag-grid-react'
 import Modal from 'react-bootstrap/Modal'
 import { Link } from 'react-router-dom'
-import { catalogueCategories, catalogueCurrency, catalogueParts, type CataloguePart } from '../data/catalogueParts'
+import { useCart } from '../cart/CartContext'
+import { catalogueCurrency, type CataloguePart } from '../data/catalogueParts'
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -33,10 +34,15 @@ function escapeHtml(value: string) {
 }
 
 function CatalogueInventoryPage() {
+  const { catalogueParts, catalogueLoading, catalogueError } = useCart()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All parts')
   const [activePart, setActivePart] = useState<CataloguePart | null>(null)
   const [pdfError, setPdfError] = useState('')
+  const catalogueCategories = useMemo(
+    () => ['All parts', ...new Set(catalogueParts.map(({ category }) => category))],
+    [catalogueParts],
+  )
 
   const filteredParts = useMemo(() => catalogueParts.filter((part) => {
     const matchesCategory = category === 'All parts' || part.category === category
@@ -50,7 +56,7 @@ function CatalogueInventoryPage() {
       part.warranty,
     ].some((value) => value.toLowerCase().includes(query))
     return matchesCategory && matchesSearch
-  }), [category, search])
+  }), [catalogueParts, category, search])
 
   const columnDefs = useMemo<ColDef<CataloguePart>[]>(() => [
     {
@@ -160,7 +166,7 @@ function CatalogueInventoryPage() {
                 <div class="price">${escapeHtml(catalogueCurrency.format(part.price))}</div>
               </div>
             </section>
-            <footer>NexusFlow sample catalogue · Prices in USD · Availability may change</footer>
+            <footer>NexusFlow parts catalogue · Prices in USD · Availability may change</footer>
           </main>
         </body>
       </html>`
@@ -206,6 +212,8 @@ function CatalogueInventoryPage() {
         </div>
       </div>
 
+      {catalogueLoading && <p className="catalogue-feedback" role="status">Loading current inventory…</p>}
+      {catalogueError && <p className="catalogue-feedback error" role="alert">{catalogueError}</p>}
       <div className="catalogue-inventory-summary" aria-label="Inventory summary">
         <article><span>PRODUCTS</span><strong>{catalogueParts.length}</strong><small>Across {catalogueCategories.length - 1} categories</small></article>
         <article><span>LOW STOCK</span><strong>{lowStockCount}</strong><small>Fewer than 10 units available</small></article>

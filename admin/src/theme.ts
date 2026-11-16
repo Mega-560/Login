@@ -9,19 +9,26 @@ export interface CustomThemeColors {
   surface: string
 }
 
-export const defaultCustomTheme: CustomThemeColors = {
-  sidebar: '#172033',
-  accent: '#3b82f6',
-  hover: '#2563eb',
-  page: '#f3f6fb',
-  surface: '#ffffff',
+export function getCatalogThemeColors(): CustomThemeColors {
+  const rootStyles = getComputedStyle(document.documentElement)
+  const readColor = (role: keyof CustomThemeColors, fallback: string) =>
+    rootStyles.getPropertyValue(`--admin-palette-catalog-${role}`).trim() || fallback
+
+  return {
+    sidebar: readColor('sidebar', '#292929'),
+    accent: readColor('accent', '#e7193b'),
+    hover: readColor('hover', '#c91432'),
+    page: readColor('page', '#f5f5f5'),
+    surface: readColor('surface', '#ffffff'),
+  }
 }
 
 export const themes = [
-  { id: 'forest', name: 'Blue Steel', description: 'Focused navy with crisp dashboard blue', colors: ['#172033', '#3b82f6', '#f3f6fb'] },
-  { id: 'ocean', name: 'Ocean', description: 'Fresh blues and cool surfaces', colors: ['#173b55', '#83d8e5', '#eef5f8'] },
-  { id: 'violet', name: 'Violet', description: 'Expressive purple with soft lilac', colors: ['#392b55', '#c8afff', '#f4f1f9'] },
-  { id: 'midnight', name: 'Midnight', description: 'Deep contrast for a focused workspace', colors: ['#18212d', '#a8d6bd', '#e9edf1'] },
+  { id: 'catalog', name: 'Catalog Red', description: 'Clean catalog red with crisp white surfaces' },
+  { id: 'forest', name: 'Blue Steel', description: 'Focused navy with crisp dashboard blue' },
+  { id: 'ocean', name: 'Ocean', description: 'Fresh blues and cool surfaces' },
+  { id: 'violet', name: 'Violet', description: 'Expressive purple with soft lilac' },
+  { id: 'midnight', name: 'Midnight', description: 'Deep contrast for a focused workspace' },
 ] as const
 
 export type ThemeId = typeof themes[number]['id']
@@ -100,8 +107,8 @@ export function applySavedTheme() {
         return
       }
     }
-    applyTheme(isThemeId(savedTheme) ? savedTheme : 'forest')
+    applyTheme(isThemeId(savedTheme) ? savedTheme : 'catalog')
   } catch {
-    applyTheme('forest')
+    applyTheme('catalog')
   }
 }

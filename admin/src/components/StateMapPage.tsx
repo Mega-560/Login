@@ -74,6 +74,8 @@ function StateMapPage() {
   const rawApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
   const apiKey = rawApiKey
   const estimatedRevenue = selectedRegion.orders * 18500
+  const themeAccent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#e7193b'
+  const themeAccentHover = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent-hover').trim() || '#c91432'
 
   useEffect(() => {
     if (!apiKey || !mapElement.current) return
@@ -107,7 +109,7 @@ function StateMapPage() {
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
               scale: region.code === selectedRegion.code ? 10 : 8,
-              fillColor: region.code === selectedRegion.code ? '#d19056' : '#568369',
+              fillColor: region.code === selectedRegion.code ? themeAccentHover : themeAccent,
               fillOpacity: 1,
               strokeColor: '#ffffff',
               strokeWeight: 2,
@@ -129,7 +131,7 @@ function StateMapPage() {
       markers.current.clear()
       map.current = null
     }
-  }, [apiKey])
+  }, [apiKey, themeAccent, themeAccentHover])
 
   useEffect(() => {
     const mapInstance = map.current
@@ -144,14 +146,14 @@ function StateMapPage() {
       marker.setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: selected ? 10 : 8,
-        fillColor: selected ? '#d19056' : '#568369',
+        fillColor: selected ? themeAccentHover : themeAccent,
         fillOpacity: 1,
         strokeColor: '#ffffff',
         strokeWeight: 2,
       })
       marker.setZIndex(selected ? 2 : 1)
     })
-  }, [selectedRegion])
+  }, [selectedRegion, themeAccent, themeAccentHover])
 
   return (
     <section className="india-page">

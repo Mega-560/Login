@@ -3,7 +3,7 @@ import { useCart } from '../cart/CartContext'
 import { catalogueCurrency } from '../data/catalogueParts'
 
 function CartPage() {
-  const { items, itemCount, subtotal, storageError, setQuantity, removeItem, clearCart } = useCart()
+  const { items, itemCount, subtotal, storageError, catalogueLoading, catalogueError, refreshCatalogue, setQuantity, removeItem, clearCart } = useCart()
 
   return (
     <section className="catalogue-page shopping-page">
@@ -11,12 +11,19 @@ function CartPage() {
         <div>
           <p className="eyebrow">YOUR SELECTION</p>
           <h1>Shopping cart</h1>
-          <p>Review your parts before continuing to the demo checkout.</p>
+          <p>Review your parts before placing an order.</p>
         </div>
         <Link className="catalogue-card-view-link" to="/catalogue/cards">Continue browsing <span aria-hidden="true">→</span></Link>
       </div>
 
       {storageError && <p className="catalogue-cart-notice" role="alert">{storageError}</p>}
+      {catalogueLoading && <p className="catalogue-feedback" role="status">Checking current inventory…</p>}
+      {catalogueError && (
+        <p className="catalogue-feedback error" role="alert">
+          {catalogueError}{' '}
+          <button type="button" className="catalogue-secondary-button" onClick={() => void refreshCatalogue()}>Retry</button>
+        </p>
+      )}
 
       {items.length === 0 ? (
         <div className="catalogue-empty-state cart-empty-state">
@@ -66,10 +73,10 @@ function CartPage() {
             <div className="cart-summary-row"><span>Items ({itemCount})</span><strong>{catalogueCurrency.format(subtotal)}</strong></div>
             <div className="cart-summary-row"><span>Shipping</span><span>Calculated later</span></div>
             <div className="cart-summary-total"><span>Subtotal</span><strong>{catalogueCurrency.format(subtotal)}</strong></div>
-            <Link className="catalogue-primary-button cart-checkout-button" to="/checkout">Continue to demo checkout</Link>
+            <Link className="catalogue-primary-button cart-checkout-button" to="/checkout">Continue to place order</Link>
             <div className="demo-checkout-note">
-              <strong>Demo checkout only</strong>
-              <span>No payment is collected. Your order will not be sent or saved.</span>
+              <strong>Payment is not collected online</strong>
+              <span>Your order will be saved for the parts team to review. Payment and delivery are arranged after confirmation.</span>
             </div>
             <p className="cart-currency-note">Prices are displayed in USD.</p>
           </aside>

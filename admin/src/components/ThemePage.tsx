@@ -3,7 +3,7 @@ import {
   applyCustomTheme,
   applyTheme,
   customThemeStorageKey,
-  defaultCustomTheme,
+  getCatalogThemeColors,
   isCustomThemeColors,
   isThemeId,
   themes,
@@ -21,18 +21,18 @@ function readSavedTheme(): ThemeSelection {
       const colors: unknown = JSON.parse(window.localStorage.getItem(customThemeStorageKey) ?? 'null')
       return isCustomThemeColors(colors) ? 'custom' : 'forest'
     }
-    return isThemeId(saved) ? saved : 'forest'
+    return isThemeId(saved) ? saved : 'catalog'
   } catch {
-    return 'forest'
+    return 'catalog'
   }
 }
 
 function readSavedCustomTheme(): CustomThemeColors {
   try {
     const saved: unknown = JSON.parse(window.localStorage.getItem(customThemeStorageKey) ?? 'null')
-    return isCustomThemeColors(saved) ? saved : defaultCustomTheme
+    return isCustomThemeColors(saved) ? saved : getCatalogThemeColors()
   } catch {
-    return defaultCustomTheme
+    return getCatalogThemeColors()
   }
 }
 
@@ -82,13 +82,23 @@ function ThemePage() {
     }
   }
 
+  function loadCatalogPalette() {
+    const nextColors = getCatalogThemeColors()
+    setCustomColors(nextColors)
+    setSelectedTheme('custom')
+    setCustomSaved(false)
+    setNotice('Catalog Red colors loaded into the custom theme editor. Save to apply them.')
+    setError('')
+    applyCustomTheme(nextColors)
+  }
+
   return (
     <section className="theme-settings-page">
       <header className="theme-settings-header">
         <div>
           <p className="eyebrow">ADMIN CONSOLE / PERSONALIZATION</p>
           <h1>Admin appearance</h1>
-          <p className="theme-settings-subtitle">Choose the look of your administrator workspace. Client portal settings stay separate.</p>
+          <p className="theme-settings-subtitle">Choose the look of your administrator workspace. Edit admin/src/theme-colors.scss to change preset colors globally; client portal settings stay separate.</p>
         </div>
         <span className="theme-saved-indicator"><span /> {selectedTheme === 'custom' ? (customSaved ? 'Custom theme saved' : 'Previewing custom colors') : 'Saved on this device'}</span>
       </header>
@@ -130,8 +140,13 @@ function ThemePage() {
                   <strong>{theme.name}</strong>
                   <small>{theme.description}</small>
                 </span>
-                <span className="theme-swatches" aria-label={`${theme.name} color palette`}>
-                  {theme.colors.map((color) => <i key={color} style={{ backgroundColor: color }} />)}
+                <span
+                  className="theme-swatches"
+                  data-theme={theme.id}
+                  aria-label={`${theme.name} sidebar, accent, hover, page, and card colors`}
+                  title="Sidebar, accent, hover, page, and card surface colors"
+                >
+                  <i /><i /><i /><i /><i />
                 </span>
               </span>
               <span className="theme-option-check" aria-hidden="true">{selected ? '✓' : ''}</span>
@@ -180,7 +195,10 @@ function ThemePage() {
         </div>
         <div className="custom-theme-actions">
           <span>Text colors are selected automatically for contrast.</span>
-          <button className="custom-theme-save-button" type="button" onClick={saveCustomTheme}>Save custom theme</button>
+          <div className="custom-theme-action-buttons">
+            <button className="custom-theme-template-button" type="button" onClick={loadCatalogPalette}>Load Catalog Red palette</button>
+            <button className="custom-theme-save-button" type="button" onClick={saveCustomTheme}>Save custom theme</button>
+          </div>
         </div>
       </section>
 
@@ -190,7 +208,7 @@ function ThemePage() {
             ? 'Custom colors are previewed. Save them to keep this theme on your device.'
             : 'Choose a theme to apply it instantly.')}
         </span>
-        <button className="theme-reset-button" type="button" title="Restore the default Forest theme" onClick={() => chooseTheme('forest')}>
+        <button className="theme-reset-button" type="button" title="Restore the default Catalog Red theme" onClick={() => chooseTheme('catalog')}>
           Reset to default
         </button>
       </footer>

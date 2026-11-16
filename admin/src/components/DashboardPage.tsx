@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   BarElement,
   CategoryScale,
@@ -13,6 +13,7 @@ import {
   type ChartOptions,
 } from 'chart.js'
 import { Bar, Doughnut, Line } from 'react-chartjs-2'
+import { adminApi, type AdminCataloguePart, type CustomerOrder } from '../adminApi'
 
 type ExportableChart = {
   toBase64Image: (type?: string, quality?: number) => string
@@ -25,6 +26,17 @@ function downloadChart(chart: ExportableChart | null, filename: string) {
   link.href = chart.toBase64Image('image/png', 1)
   link.download = `${filename}.png`
   link.click()
+}
+
+function getThemeColor(property: string, fallback: string) {
+  return getComputedStyle(document.documentElement).getPropertyValue(property).trim() || fallback
+}
+
+function withAlpha(hex: string, alpha: number) {
+  const channels = hex.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i)
+  if (!channels) return hex
+  const [, red, green, blue] = channels
+  return `rgba(${Number.parseInt(red, 16)}, ${Number.parseInt(green, 16)}, ${Number.parseInt(blue, 16)}, ${alpha})`
 }
 
 function DownloadIcon() {
@@ -49,14 +61,6 @@ ChartJS.register(
   Tooltip,
 )
 
-const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
-const inventory = [
-  { category: 'Braking', units: 36 },
-  { category: 'Filters', units: 97 },
-  { category: 'Wheels & tyres', units: 23 },
-  { category: 'Ignition', units: 49 },
-]
-
 const chartLegend = {
   position: 'bottom' as const,
   labels: {
@@ -65,53 +69,6 @@ const chartLegend = {
     boxWidth: 7,
     padding: 18,
   },
-}
-
-const salesData = {
-  labels: months,
-  datasets: [{
-    label: 'Sales (USD)',
-    data: [15800, 19400, 17250, 23100, 21800, 24860],
-    borderColor: '#3b82f6',
-    backgroundColor: 'rgba(59, 130, 246, 0.14)',
-    fill: true,
-    tension: 0.38,
-    pointRadius: 3,
-    pointHoverRadius: 5,
-  }],
-}
-
-const ordersData = {
-  labels: months,
-  datasets: [{
-    label: 'Orders',
-    data: [118, 142, 131, 167, 159, 186],
-    backgroundColor: '#6f9ef5',
-    borderRadius: 4,
-    maxBarThickness: 32,
-  }],
-}
-
-const inventoryData = {
-  labels: inventory.map(({ category }) => category),
-  datasets: [{
-    label: 'Units in stock',
-    data: inventory.map(({ units }) => units),
-    backgroundColor: ['#3b82f6', '#72a9ed', '#5a759e', '#96b8dc'],
-    borderRadius: 4,
-    maxBarThickness: 30,
-  }],
-}
-
-const orderStatusData = {
-  labels: ['Delivered', 'Processing', 'Pending', 'Cancelled'],
-  datasets: [{
-    data: [112, 38, 27, 9],
-    backgroundColor: ['#3b82f6', '#61a4e8', '#e4bd70', '#c98576'],
-    borderColor: '#ffffff',
-    borderWidth: 3,
-    hoverOffset: 5,
-  }],
 }
 
 const salesOptions: ChartOptions<'line'> = {
@@ -129,7 +86,7 @@ const salesOptions: ChartOptions<'line'> = {
   scales: {
     y: {
       beginAtZero: true,
-      grid: { color: '#edf0eb' },
+      grid: { color: () => getThemeColor('--theme-border', '#edf0eb') },
       ticks: {
         callback: (value: string | number) => `$${Number(value) / 1000}k`,
       },
@@ -148,7 +105,7 @@ const ordersOptions: ChartOptions<'bar'> = {
   scales: {
     y: {
       beginAtZero: true,
-      grid: { color: '#edf0eb' },
+      grid: { color: () => getThemeColor('--theme-border', '#edf0eb') },
       ticks: { precision: 0 },
     },
     x: { grid: { display: false } },
@@ -166,7 +123,7 @@ const inventoryOptions: ChartOptions<'bar'> = {
   scales: {
     x: {
       beginAtZero: true,
-      grid: { color: '#edf0eb' },
+      grid: { color: () => getThemeColor('--theme-border', '#edf0eb') },
       ticks: { precision: 0 },
     },
     y: { grid: { display: false } },
@@ -181,11 +138,108 @@ const orderStatusOptions: ChartOptions<'doughnut'> = {
 }
 
 function DashboardPage() {
-  const totalUnits = inventory.reduce((total, item) => total + item.units, 0)
+  const [parts, setParts] = useState<AdminCataloguePart[]>([])
+  const [orders, setOrders] = useState<CustomerOrder[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    let active = true
+    Promise.all([adminApi.getCatalogueParts(), adminApi.getOrders()])
+      .then(([loadedParts, loadedOrders]) => {
+        if (!active) return
+        setParts(loadedParts)
+        setOrders(loadedOrders)
+      })
+      .catch((cause: unknown) => {
+        if (active) setError(cause instanceof Error ? cause.message : 'Could not load dashboard data.')
+      })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const activeParts = parts.filter((part) => part.active)
+  const totalUnits = activeParts.reduce((total, part) => total + part.stock, 0)
+  const monthStarts = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date()
+    date.setDate(1)
+    date.setMonth(date.getMonth() - (5 - index))
+    date.setHours(0, 0, 0, 0)
+    return date
+  })
+  const monthLabels = monthStarts.map((date) => new Intl.DateTimeFormat(undefined, { month: 'short' }).format(date))
+  const monthlyOrders = monthStarts.map((month, index) => {
+    const nextMonth = monthStarts[index + 1]
+    return orders.filter(({ createdAt }) => {
+      const created = new Date(createdAt)
+      return created >= month && (nextMonth ? created < nextMonth : created <= new Date())
+    })
+  })
+  const ordersPerMonth = monthlyOrders.map((monthOrders) => monthOrders.length)
+  const orderValuePerMonth = monthlyOrders.map((monthOrders) =>
+    monthOrders.filter((order) => order.status !== 'cancelled')
+      .reduce((total, order) => total + order.subtotal, 0))
+  const categoryInventory = Array.from(activeParts.reduce((totals, part) => {
+    totals.set(part.category, (totals.get(part.category) ?? 0) + part.stock)
+    return totals
+  }, new Map<string, number>()), ([category, units]) => ({ category, units }))
+  const pendingOrders = orders.filter((order) => order.status === 'pending').length
+  const thisMonthOrders = ordersPerMonth[ordersPerMonth.length - 1] ?? 0
+  const lowStockParts = activeParts.filter((part) => part.stock < 10).length
+  const orderStatusCounts = ['confirmed', 'fulfilled', 'pending', 'cancelled'].map((status) =>
+    orders.filter((order) => order.status === status).length)
+  const themeAccent = getThemeColor('--theme-accent', '#3b82f6')
+  ChartJS.defaults.color = getThemeColor('--theme-muted', '#707477')
   const salesChart = useRef<ChartJS<'line'>>(null)
   const inventoryChart = useRef<ChartJS<'bar'>>(null)
   const ordersChart = useRef<ChartJS<'bar'>>(null)
   const orderStatusChart = useRef<ChartJS<'doughnut'>>(null)
+  const themedSalesData = {
+    labels: monthLabels,
+    datasets: [{
+      label: 'Order subtotal (USD)',
+      data: orderValuePerMonth,
+      borderColor: themeAccent,
+      backgroundColor: withAlpha(themeAccent, 0.14),
+      fill: true,
+      tension: 0.38,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+    }],
+  }
+  const themedOrdersData = {
+    labels: monthLabels,
+    datasets: [{
+      label: 'Orders',
+      data: ordersPerMonth,
+      backgroundColor: themeAccent,
+      borderRadius: 4,
+      maxBarThickness: 32,
+    }],
+  }
+  const themedInventoryData = {
+    labels: categoryInventory.map(({ category }) => category),
+    datasets: [{
+      label: 'Units in stock',
+      data: categoryInventory.map(({ units }) => units),
+      backgroundColor: categoryInventory.map((_, index) => withAlpha(themeAccent, Math.max(0.35, 1 - index * 0.15))),
+      borderRadius: 4,
+      maxBarThickness: 30,
+    }],
+  }
+  const themedOrderStatusData = {
+    labels: ['Confirmed', 'Fulfilled', 'Pending', 'Cancelled'],
+    datasets: [{
+      data: orderStatusCounts,
+      backgroundColor: [themeAccent, withAlpha(themeAccent, 0.72), '#e4bd70', '#c98576'],
+      borderColor: getThemeColor('--theme-surface', '#ffffff'),
+      borderWidth: 3,
+      hoverOffset: 5,
+    }],
+  }
 
   return (
     <section className="admin-dashboard">
@@ -193,39 +247,37 @@ function DashboardPage() {
         <div>
           <p className="eyebrow">OVERVIEW / OPERATIONS</p>
           <h1>Dashboard</h1>
-          <p>Monitor inventory, sales performance, and order activity.</p>
+          <p>Monitor live inventory, customer order activity, and order values.</p>
         </div>
-        <span className="admin-dashboard-period">Last 6 months <span aria-hidden="true">⌄</span></span>
+        <span className="admin-dashboard-period">Last 6 months</span>
       </header>
 
-      <div className="admin-dashboard-demo-note" role="note">
-        <strong>Sample analytics</strong>
-        <span>Charts below use illustrative demo data. Live inventory, sales, and order reporting is not connected yet.</span>
-      </div>
+      {error && <div className="admin-dashboard-demo-note" role="alert"><strong>Dashboard unavailable</strong><span>{error}</span></div>}
+      {isLoading && <div className="admin-dashboard-demo-note" role="status"><strong>Loading</strong><span>Fetching live inventory and orders…</span></div>}
 
       <section className="admin-dashboard-stats" aria-label="Business summary">
         <article className="admin-dashboard-stat">
           <span>INVENTORY ON HAND</span>
           <strong>{totalUnits.toLocaleString()}</strong>
-          <small>Units across 4 product categories</small>
+          <small>Units across {categoryInventory.length} active categories</small>
           <i className="admin-stat-mark inventory" aria-hidden="true">▦</i>
         </article>
         <article className="admin-dashboard-stat">
-          <span>SALES THIS MONTH</span>
-          <strong>$24,860</strong>
-          <small><b className="admin-stat-positive">+14.2%</b> vs. previous month</small>
-          <i className="admin-stat-mark sales" aria-hidden="true">$</i>
+          <span>AWAITING REVIEW</span>
+          <strong>{pendingOrders}</strong>
+          <small>Orders that need admin confirmation</small>
+          <i className="admin-stat-mark sales" aria-hidden="true">!</i>
         </article>
         <article className="admin-dashboard-stat">
           <span>ORDERS THIS MONTH</span>
-          <strong>186</strong>
-          <small><b className="admin-stat-positive">+9.8%</b> vs. previous month</small>
+          <strong>{thisMonthOrders}</strong>
+          <small>Orders placed this calendar month</small>
           <i className="admin-stat-mark orders" aria-hidden="true">↗</i>
         </article>
         <article className="admin-dashboard-stat">
           <span>LOW-STOCK PRODUCTS</span>
-          <strong>4</strong>
-          <small>Sample alert threshold: fewer than 10</small>
+          <strong>{lowStockParts}</strong>
+          <small>Active parts with fewer than 10 units</small>
           <i className="admin-stat-mark low-stock" aria-hidden="true">!</i>
         </article>
       </section>
@@ -233,14 +285,14 @@ function DashboardPage() {
       <section className="admin-dashboard-chart-grid" aria-label="Inventory and sales charts">
         <article className="admin-chart-panel admin-chart-panel-wide">
           <div className="admin-chart-heading">
-            <div><h2>Sales overview</h2><p>Monthly revenue · USD</p></div>
+            <div><h2>Order value overview</h2><p>Monthly order subtotals · USD, not payments received</p></div>
             <div className="admin-chart-actions">
-              <span className="admin-chart-badge">Sales</span>
-              <button type="button" className="admin-chart-export" onClick={() => downloadChart(salesChart.current, 'sales-overview')}><DownloadIcon />Export PNG</button>
+              <span className="admin-chart-badge">Order value</span>
+              <button type="button" className="admin-chart-export" onClick={() => downloadChart(salesChart.current, 'order-value-overview')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-sales-chart">
-            <Line ref={salesChart} data={salesData} options={salesOptions} aria-label="Line chart showing monthly sales in USD" role="img" />
+            <Line ref={salesChart} data={themedSalesData} options={salesOptions} aria-label="Line chart showing monthly order subtotals in USD" role="img" />
           </div>
         </article>
 
@@ -253,7 +305,7 @@ function DashboardPage() {
             </div>
           </div>
           <div className="admin-chart-canvas admin-inventory-chart">
-            <Bar ref={inventoryChart} data={inventoryData} options={inventoryOptions} aria-label="Bar chart showing inventory units by category" role="img" />
+            <Bar ref={inventoryChart} data={themedInventoryData} options={inventoryOptions} aria-label="Bar chart showing inventory units by category" role="img" />
           </div>
         </article>
 
@@ -266,20 +318,20 @@ function DashboardPage() {
             </div>
           </div>
           <div className="admin-chart-canvas admin-orders-chart">
-            <Bar ref={ordersChart} data={ordersData} options={ordersOptions} aria-label="Bar chart showing monthly order counts" role="img" />
+            <Bar ref={ordersChart} data={themedOrdersData} options={ordersOptions} aria-label="Bar chart showing monthly order counts" role="img" />
           </div>
         </article>
 
         <article className="admin-chart-panel">
           <div className="admin-chart-heading">
-            <div><h2>Order status</h2><p>Breakdown of sample orders</p></div>
+            <div><h2>Order status</h2><p>Current order fulfillment states</p></div>
             <div className="admin-chart-actions">
               <span className="admin-chart-badge">Fulfilment</span>
               <button type="button" className="admin-chart-export" onClick={() => downloadChart(orderStatusChart.current, 'order-status')}><DownloadIcon />Export PNG</button>
             </div>
           </div>
           <div className="admin-chart-canvas admin-status-chart">
-            <Doughnut ref={orderStatusChart} data={orderStatusData} options={orderStatusOptions} aria-label="Doughnut chart showing order status breakdown" role="img" />
+            <Doughnut ref={orderStatusChart} data={themedOrderStatusData} options={orderStatusOptions} aria-label="Doughnut chart showing order status breakdown" role="img" />
           </div>
         </article>
       </section>

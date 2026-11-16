@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { catalogueParts, type CataloguePart } from '../data/catalogueParts'
+import { catalogueApi } from '../data/catalogueApi'
+import type { CataloguePart } from '../data/catalogueParts'
 
 const storageKey = 'nexusflow-client-cart'
 
@@ -13,6 +14,10 @@ interface CartContextValue {
   itemCount: number
   subtotal: number
   storageError: string
+  catalogueParts: CataloguePart[]
+  catalogueLoading: boolean
+  catalogueError: string
+  refreshCatalogue: () => Promise<void>
   addItem: (part: CataloguePart, quantity?: number) => void
   addItems: (parts: CataloguePart[]) => void
   setQuantity: (partId: string, quantity: number) => void
@@ -22,7 +27,7 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null)
 
-function readCart(): CartLine[] {
+function readCart(parts: CataloguePart[]): CartLine[] {
   try {
     const stored: unknown = JSON.parse(window.localStorage.getItem(storageKey) ?? '[]')
     if (!Array.isArray(stored)) return []
@@ -31,7 +36,7 @@ function readCart(): CartLine[] {
       if (typeof entry !== 'object' || entry === null || !('partId' in entry) || !('quantity' in entry)) return []
       const { partId, quantity } = entry
       if (typeof partId !== 'string' || typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 1) return []
-      const part = catalogueParts.find((candidate) => candidate.id === partId)
+      const part = parts.find((candidate) => candidate.id === partId)
       return part ? [{ part, quantity: Math.min(quantity, part.stock) }] : []
     })
   } catch {
@@ -40,20 +45,56 @@ function readCart(): CartLine[] {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartLine[]>(readCart)
+  const [items, setItems] = useState<CartLine[]>([])
+  const [catalogueParts, setCatalogueParts] = useState<CataloguePart[]>([])
+  const [catalogueLoading, setCatalogueLoading] = useState(true)
+  const [catalogueError, setCatalogueError] = useState('')
+  const [cartHydrated, setCartHydrated] = useState(false)
   const [storageError, setStorageError] = useState('')
 
+  async function refreshCatalogue() {
+    setCatalogueLoading(true)
+    setCatalogueError('')
+    try {
+      const parts = await catalogueApi.getParts()
+      setCatalogueParts(parts)
+      setItems((current) => {
+        const source = cartHydrated ? current : readCart(parts)
+        return source.flatMap(({ part, quantity }) => {
+          const currentPart = parts.find(({ id }) => id === part.id)
+          return currentPart?.active !== false && currentPart
+            ? [{ part: currentPart, quantity: Math.min(quantity, currentPart.stock) }].filter(({ quantity: count }) => count > 0)
+            : []
+        })
+      })
+      setCartHydrated(true)
+    } catch (error) {
+      setCatalogueError(error instanceof Error ? error.message : 'Could not load catalogue inventory.')
+    } finally {
+      setCatalogueLoading(false)
+    }
+  }
+
   useEffect(() => {
+    void refreshCatalogue()
+  }, [])
+
+  useEffect(() => {
+    if (!cartHydrated) return
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(items.map(({ part, quantity }) => ({ partId: part.id, quantity }))))
       setStorageError('')
     } catch {
       setStorageError('Your cart could not be saved in this browser. It may be lost when you leave this page.')
     }
-  }, [items])
+  }, [cartHydrated, items])
 
   const value = useMemo<CartContextValue>(() => ({
     items,
+    catalogueParts,
+    catalogueLoading,
+    catalogueError,
+    refreshCatalogue,
     itemCount: items.reduce((total, item) => total + item.quantity, 0),
     subtotal: items.reduce((total, item) => total + item.part.price * item.quantity, 0),
     storageError,
@@ -89,7 +130,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     removeItem: (partId) => setItems((current) => current.filter(({ part }) => part.id !== partId)),
     clearCart: () => setItems([]),
-  }), [items, storageError])
+  }), [items, catalogueParts, catalogueLoading, catalogueError, storageError])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

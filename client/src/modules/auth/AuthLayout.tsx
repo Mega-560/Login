@@ -3,22 +3,29 @@ import BrandMark from '../../components/BrandMark'
 
 function AuthLayout() {
   return (
-    <main className="login-page">
-      <section className="login-aside">
-        <Link to="/" className="brand-lockup login-brand">
-          <span className="brand-mark"><BrandMark /></span>
-          <span className="brand-name">NexusFlow</span>
+    <main className="login-page catalog-login-page">
+      <header className="catalog-login-header">
+        <Link to="/login" className="catalog-login-title">
+          <span className="catalog-login-mark"><BrandMark /></span>
+          <span>Electronic Parts Catalog System</span>
         </Link>
-        <div className="login-aside-copy">
-          <p className="eyebrow">A BETTER WAY TO WORK</p>
-          <h1>Bring your<br />best work<br />into focus.</h1>
-          <p>One connected workspace for the things your team is building together.</p>
-        </div>
-        <span className="login-aside-foot">NEXUSFLOW WORKSPACE · 2026</span>
-      </section>
-      <section className="login-main">
-        <Outlet />
-      </section>
+        <span className="catalog-login-portal">CLIENT PORTAL</span>
+      </header>
+      <div className="catalog-login-layout">
+        <section className="catalog-login-info" aria-label="Automotive catalogue information">
+          <div className="catalog-login-illustration">
+            <img src="/login-automotive.svg" alt="Automotive parts arranged around a vehicle catalogue" />
+          </div>
+          <div className="catalog-login-warning">
+            <strong>LOGIN WARNING</strong>
+            <p>UNAUTHORIZED ACCESS TO THIS SYSTEM IS STRICTLY PROHIBITED.</p>
+            <p>System information is intended for authorized users only. Access is monitored. If you are not an authorized user, disconnect immediately.</p>
+          </div>
+        </section>
+        <section className="login-main">
+          <Outlet />
+        </section>
+      </div>
     </main>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandMark from '../../../components/BrandMark'
 import Toast from '../../../components/Toast'
 import { authApi } from '../authApi'
 
@@ -27,6 +28,10 @@ function LoginPage() {
 
   return (
     <div className="login-form-wrap">
+      <div className="catalog-login-wordmark">
+        <span><BrandMark /></span>
+        <strong>NexusFlow <small>Rise</small></strong>
+      </div>
       <p className="eyebrow admin-login-kicker">SECURE ADMIN ACCESS</p>
       <h2>Administrator sign in</h2>
       <p className="login-subtitle">Use your administrator account to continue.</p>

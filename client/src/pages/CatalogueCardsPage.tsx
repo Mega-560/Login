@@ -2,13 +2,17 @@ import { useMemo, useState, type FormEvent } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../cart/CartContext'
-import { catalogueCategories, catalogueCurrency, catalogueParts, type CataloguePart } from '../data/catalogueParts'
+import { catalogueCurrency, type CataloguePart } from '../data/catalogueParts'
 
 const pageSize = 6
 
 function CatalogueCardsPage() {
   const navigate = useNavigate()
-  const { addItem, addItems, itemCount, storageError } = useCart()
+  const { addItem, addItems, itemCount, storageError, catalogueParts, catalogueLoading, catalogueError } = useCart()
+  const catalogueCategories = useMemo(
+    () => ['All parts', ...new Set(catalogueParts.map(({ category }) => category))],
+    [catalogueParts],
+  )
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All parts')
   const [page, setPage] = useState(1)
@@ -81,7 +85,7 @@ function CatalogueCardsPage() {
     <section className="catalogue-page catalogue-cards-page">
       <div className="catalogue-page-heading">
         <div>
-          <p className="eyebrow">NEXUSFLOW / SAMPLE PARTS</p>
+          <p className="eyebrow">NEXUSFLOW / PARTS CATALOGUE</p>
           <h1>Browse parts</h1>
           <p>Explore the parts range, check vehicle fitment, and add one or more items to your cart.</p>
         </div>
@@ -91,6 +95,9 @@ function CatalogueCardsPage() {
           <span className="catalogue-count"><strong>{catalogueParts.length}</strong> parts</span>
         </div>
       </div>
+
+      {catalogueLoading && <p className="catalogue-feedback" role="status">Loading current inventory…</p>}
+      {catalogueError && <p className="catalogue-feedback error" role="alert">{catalogueError}</p>}
 
       <div className="catalogue-card-toolbar">
         <div>

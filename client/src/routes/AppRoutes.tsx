@@ -19,6 +19,7 @@ const CataloguePage = lazy(() => import('../pages/CataloguePage'))
 const CatalogueCardsPage = lazy(() => import('../pages/CatalogueCardsPage'))
 const CatalogueInventoryPage = lazy(() => import('../pages/CatalogueInventoryPage'))
 const CataloguePdfPage = lazy(() => import('../pages/CataloguePdfPage'))
+const OrderHistoryPage = lazy(() => import('../pages/OrderHistoryPage'))
 const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
 
@@ -69,6 +70,7 @@ function AppRoutes() {
           />
           <Route path="cart" element={<CartPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="orders" element={<Suspense fallback={<div className="catalogue-loading" role="status">Loading order history…</div>}><OrderHistoryPage /></Suspense>} />
           <Route element={<RequirePageAccess page="about" />}>
             <Route path="about" element={<AboutPage />} />
           </Route>

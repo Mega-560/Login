@@ -1,0 +1,122 @@
+// Edit these palettes to change admin theme colors globally.
+$admin-palettes: (
+  "catalog": (
+    sidebar: #292929,
+    sidebar-text: #fff,
+    accent: #e7193b,
+    hover: #c91432,
+    accent-text: #fff,
+    hover-text: #fff,
+    accent-soft: #fbe8ec,
+    surface: #fff,
+    page: #f5f5f5,
+    text: #292a2c,
+    muted: #707477,
+    border: #e4e4e4,
+  ),
+  "forest": (
+    sidebar: #172033,
+    sidebar-text: #fff,
+    accent: #3b82f6,
+    hover: #2563eb,
+    accent-text: #fff,
+    hover-text: #fff,
+    accent-soft: #eff6ff,
+    surface: #fff,
+    page: #f3f6fb,
+    text: #1e293b,
+    muted: #64748b,
+    border: #e2e8f0,
+  ),
+  "ocean": (
+    sidebar: #173b55,
+    sidebar-text: #fff,
+    accent: #83d8e5,
+    hover: #5bbdca,
+    accent-text: #173b55,
+    hover-text: #173b55,
+    accent-soft: #e1f3f5,
+    surface: #fff,
+    page: #eef5f8,
+    text: #233746,
+    muted: #647986,
+    border: #dce8ed,
+  ),
+  "violet": (
+    sidebar: #392b55,
+    sidebar-text: #fff,
+    accent: #c8afff,
+    hover: #aa8ae7,
+    accent-text: #392b55,
+    hover-text: #392b55,
+    accent-soft: #eee7fa,
+    surface: #fff,
+    page: #f4f1f9,
+    text: #302843,
+    muted: #716985,
+    border: #e6dfef,
+  ),
+  "midnight": (
+    sidebar: #18212d,
+    sidebar-text: #e8edf1,
+    accent: #a8d6bd,
+    hover: #8bbfa4,
+    accent-text: #18212d,
+    hover-text: #18212d,
+    accent-soft: #33483f,
+    surface: #293646,
+    page: #202b38,
+    text: #e8edf1,
+    muted: #aebbc5,
+    border: #3a4a5b,
+  ),
+);
+
+:root {
+  @each $theme, $palette in $admin-palettes {
+    @each $role, $value in $palette {
+      --admin-palette-#{$theme}-#{$role}: #{$value};
+    }
+  }
+}
+
+@each $theme, $palette in $admin-palettes {
+  :root[data-nexus-theme="#{$theme}"] {
+    --theme-sidebar: var(--admin-palette-#{$theme}-sidebar);
+    --theme-sidebar-text: var(--admin-palette-#{$theme}-sidebar-text);
+    --theme-accent: var(--admin-palette-#{$theme}-accent);
+    --theme-accent-hover: var(--admin-palette-#{$theme}-hover);
+    --theme-accent-text: var(--admin-palette-#{$theme}-accent-text);
+    --theme-hover-text: var(--admin-palette-#{$theme}-hover-text);
+    --theme-accent-soft: var(--admin-palette-#{$theme}-accent-soft);
+    --theme-surface: var(--admin-palette-#{$theme}-surface);
+    --theme-page: var(--admin-palette-#{$theme}-page);
+    --theme-text: var(--admin-palette-#{$theme}-text);
+    --theme-muted: var(--admin-palette-#{$theme}-muted);
+    --theme-border: var(--admin-palette-#{$theme}-border);
+    @if $theme == "midnight" {
+      color-scheme: dark;
+    }
+  }
+
+  .theme-preview-#{$theme} {
+    --preview-sidebar: var(--admin-palette-#{$theme}-sidebar);
+    --preview-accent: var(--admin-palette-#{$theme}-accent);
+    --preview-accent-soft: var(--admin-palette-#{$theme}-accent-soft);
+    --preview-bg: var(--admin-palette-#{$theme}-page);
+  }
+
+  .theme-swatches[data-theme="#{$theme}"] {
+    --swatch-sidebar: var(--admin-palette-#{$theme}-sidebar);
+    --swatch-accent: var(--admin-palette-#{$theme}-accent);
+    --swatch-hover: var(--admin-palette-#{$theme}-hover);
+    --swatch-page: var(--admin-palette-#{$theme}-page);
+    --swatch-surface: var(--admin-palette-#{$theme}-surface);
+  }
+}
+
+.theme-swatches i:nth-child(1) { background: var(--swatch-sidebar); }
+.theme-swatches i:nth-child(2) { background: var(--swatch-accent); }
+.theme-swatches i:nth-child(3) { background: var(--swatch-hover); }
+.theme-swatches i:nth-child(4) { background: var(--swatch-page); }
+.theme-swatches i:nth-child(5) { background: var(--swatch-surface); }

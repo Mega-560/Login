@@ -3,7 +3,7 @@ import type { AuthenticatedSessionUser } from '../modules/auth/authApi'
 import { clientPages } from '../pageAccess'
 import BrandMark from './BrandMark'
 
-type MenuIconName = 'home' | 'about' | 'contact' | 'catalogue' | 'theme'
+type MenuIconName = 'home' | 'about' | 'contact' | 'catalogue' | 'manuals' | 'orders' | 'theme'
 
 function MenuIcon({ name }: { name: MenuIconName }) {
   return (
@@ -12,6 +12,8 @@ function MenuIcon({ name }: { name: MenuIconName }) {
       {name === 'about' && <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>}
       {name === 'contact' && <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>}
       {name === 'catalogue' && <><path d="M4 5.5 12 3l8 2.5v13L12 21l-8-2.5z" /><path d="m4 5.5 8 2.6 8-2.6M12 8.1V21" /><path d="m8 4.2 8 2.6" /></>}
+      {name === 'manuals' && <><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5v-17Z" /><path d="M5 5h12M9 9h7M9 13h7" /></>}
+      {name === 'orders' && <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h4" /><path d="m14 16 1.5 1.5L19 14" /></>}
       {name === 'theme' && <><path d="M12 3a9 9 0 1 0 0 18h1.2a2 2 0 0 0 1.5-3.3 1.8 1.8 0 0 1 1.4-3h1A4.9 4.9 0 0 0 22 9.8C22 6 17.5 3 12 3Z" /><path d="M7.5 10h.01M10 7h.01M15 7h.01M17.5 10h.01" /></>}
     </svg>
   )
@@ -40,6 +42,14 @@ function SideMenu({ user, isCollapsed, onToggle }: SideMenuProps) {
         <NavLink to="/catalogue/inventory" className="sidebar-link" aria-label="Product inventory" title="View product inventory">
           <MenuIcon name="catalogue" />
           <span className="nav-label">Inventory</span>
+        </NavLink>
+        <NavLink to="/catalogue/pdf" className="sidebar-link" aria-label="Catalogue manuals" title="View shared catalogue manuals">
+          <MenuIcon name="manuals" />
+          <span className="nav-label">Manuals</span>
+        </NavLink>
+        <NavLink to="/orders" className="sidebar-link" aria-label="Order history" title="Track your parts orders">
+          <MenuIcon name="orders" />
+          <span className="nav-label">My orders</span>
         </NavLink>
         {clientPages.filter(({ key }) => user.permissions[key].view).map(({ key, label, path }) => (
           <NavLink key={key} to={path} end={key === 'home'} className="sidebar-link" aria-label={label} title={label}>

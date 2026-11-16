@@ -9,6 +9,8 @@ export interface CataloguePart {
   image: string
   imageAlt: string
   description: string
+  active?: boolean
+  updatedAt?: number
 }
 
 export const catalogueParts: CataloguePart[] = [

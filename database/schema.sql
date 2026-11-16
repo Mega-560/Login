@@ -30,3 +30,66 @@ CREATE TABLE IF NOT EXISTS user_page_permissions (
   CHECK (can_edit = 0 OR can_view = 1),
   CHECK (can_update = 0 OR (can_edit = 1 AND can_view = 1))
 );
+
+CREATE TABLE IF NOT EXISTS catalogue_parts (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  vehicle TEXT NOT NULL,
+  price REAL NOT NULL CHECK (price >= 0),
+  stock INTEGER NOT NULL CHECK (stock >= 0),
+  warranty TEXT NOT NULL,
+  image TEXT NOT NULL,
+  image_alt TEXT NOT NULL,
+  description TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS catalogue_parts_active_category_idx
+  ON catalogue_parts (active, category, name);
+
+CREATE TABLE IF NOT EXISTS catalogue_manual_categories (
+  id TEXT PRIMARY KEY,
+  parent_id TEXT REFERENCES catalogue_manual_categories(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS catalogue_manuals (
+  id TEXT PRIMARY KEY,
+  category_id TEXT NOT NULL REFERENCES catalogue_manual_categories(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  mime_type TEXT NOT NULL DEFAULT 'application/pdf' CHECK (mime_type = 'application/pdf'),
+  data BLOB NOT NULL,
+  size INTEGER NOT NULL CHECK (size > 0),
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS customer_orders (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  shipping_address TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'fulfilled', 'cancelled')),
+  payment_status TEXT NOT NULL DEFAULT 'due' CHECK (payment_status IN ('due', 'paid', 'refunded')),
+  currency TEXT NOT NULL DEFAULT 'USD' CHECK (currency = 'USD'),
+  subtotal REAL NOT NULL CHECK (subtotal >= 0),
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS customer_orders_user_created_idx
+  ON customer_orders (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS customer_order_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id TEXT NOT NULL REFERENCES customer_orders(id) ON DELETE CASCADE,
+  part_id TEXT NOT NULL,
+  part_name TEXT NOT NULL,
+  unit_price REAL NOT NULL CHECK (unit_price >= 0),
+  quantity INTEGER NOT NULL CHECK (quantity > 0)
+);
+
+CREATE INDEX IF NOT EXISTS customer_order_items_order_idx
+  ON customer_order_items (order_id);

@@ -3,7 +3,7 @@ import {
   applyCustomTheme,
   applyTheme,
   customThemeStorageKey,
-  defaultCustomTheme,
+  getDefaultCustomTheme,
   isCustomThemeColors,
   isThemeId,
   normalizeCustomThemeColors,
@@ -31,9 +31,9 @@ function readSavedTheme(): ThemeSelection {
 function readSavedCustomTheme(): CustomThemeColors {
   try {
     const saved: unknown = JSON.parse(window.localStorage.getItem(customThemeStorageKey) ?? 'null')
-    return isCustomThemeColors(saved) ? normalizeCustomThemeColors(saved) : defaultCustomTheme
+    return isCustomThemeColors(saved) ? normalizeCustomThemeColors(saved) : getDefaultCustomTheme()
   } catch {
-    return defaultCustomTheme
+    return getDefaultCustomTheme()
   }
 }
 
@@ -89,7 +89,7 @@ function ThemePage() {
         <div>
           <p className="eyebrow">PERSONALIZATION</p>
           <h1>Choose your theme</h1>
-          <p className="theme-settings-subtitle">Make your client workspace feel like yours. This setting only changes your client portal.</p>
+          <p className="theme-settings-subtitle">Make your client workspace feel like yours. Edit client/src/theme-colors.scss to change preset colors globally; admin portal settings stay separate.</p>
         </div>
         <span className="theme-saved-indicator"><span /> {selectedTheme === 'custom' ? (customSaved ? 'Custom theme saved' : 'Previewing custom colors') : 'Saved on this device'}</span>
       </header>
@@ -131,8 +131,13 @@ function ThemePage() {
                   <strong>{theme.name}</strong>
                   <small>{theme.description}</small>
                 </span>
-                <span className="theme-swatches" aria-label={`${theme.name} color palette`}>
-                  {theme.colors.map((color) => <i key={color} style={{ backgroundColor: color }} />)}
+                <span
+                  className="theme-swatches"
+                  data-theme={theme.id}
+                  aria-label={`${theme.name} sidebar, accent, hover, page, and card colors`}
+                  title="Sidebar, accent, hover, page, and card surface colors"
+                >
+                  <i /><i /><i /><i /><i />
                 </span>
               </span>
               <span className="theme-option-check" aria-hidden="true">{selected ? '✓' : ''}</span>

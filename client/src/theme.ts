@@ -9,19 +9,25 @@ export interface CustomThemeColors {
   surface: string
 }
 
-export const defaultCustomTheme: CustomThemeColors = {
-  sidebar: '#29221f',
-  accent: '#f0783c',
-  hover: '#df6128',
-  page: '#faf6f1',
-  surface: '#ffffff',
+export function getDefaultCustomTheme(): CustomThemeColors {
+  const rootStyles = getComputedStyle(document.documentElement)
+  const readColor = (role: keyof CustomThemeColors, fallback: string) =>
+    rootStyles.getPropertyValue(`--client-palette-forest-${role}`).trim() || fallback
+
+  return {
+    sidebar: readColor('sidebar', '#522d60'),
+    accent: readColor('accent', '#ff9a00'),
+    hover: readColor('hover', '#e68a00'),
+    page: readColor('page', '#ffffff'),
+    surface: readColor('surface', '#ffffff'),
+  }
 }
 
 export const themes = [
-  { id: 'forest', name: 'Roadster', description: 'Warm workshop neutrals with an energetic orange', colors: ['#29221f', '#f0783c', '#faf6f1'] },
-  { id: 'ocean', name: 'Ocean', description: 'Fresh blues and cool surfaces', colors: ['#173b55', '#83d8e5', '#eef5f8'] },
-  { id: 'violet', name: 'Violet', description: 'Expressive purple with soft lilac', colors: ['#392b55', '#c8afff', '#f4f1f9'] },
-  { id: 'midnight', name: 'Midnight', description: 'Deep contrast for a focused workspace', colors: ['#18212d', '#a8d6bd', '#e9edf1'] },
+  { id: 'forest', name: 'Roadster', description: 'Amber accents on a rich plum sidebar and white pages' },
+  { id: 'ocean', name: 'Ocean', description: 'Fresh blues and cool surfaces' },
+  { id: 'violet', name: 'Violet', description: 'Expressive purple with soft lilac' },
+  { id: 'midnight', name: 'Midnight', description: 'Deep contrast for a focused workspace' },
 ] as const
 
 export type ThemeId = typeof themes[number]['id']
@@ -41,7 +47,7 @@ export function isCustomThemeColors(value: unknown): value is CustomThemeColors 
 export function normalizeCustomThemeColors(colors: CustomThemeColors): Required<CustomThemeColors> {
   return {
     ...colors,
-    hover: colors.hover ?? '#cce57a',
+    hover: colors.hover ?? getDefaultCustomTheme().hover,
   }
 }
 
@@ -50,7 +56,7 @@ function getContrastColor(hex: string) {
   const luminance = channels
     .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
     .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0)
-  return luminance > 0.42 ? '#17231c' : '#ffffff'
+  return luminance > 0.179 ? '#17231c' : '#ffffff'
 }
 
 export function applyTheme(theme: ThemeId) {

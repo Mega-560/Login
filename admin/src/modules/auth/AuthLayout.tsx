@@ -3,23 +3,29 @@ import BrandMark from '../../components/BrandMark'
 
 function AuthLayout() {
   return (
-    <main className="login-page admin-login-page">
-      <section className="login-aside">
-        <Link to="/login" className="brand-lockup login-brand">
-          <span className="admin-brand-mark"><BrandMark /></span>
-          <span className="brand-name">NexusFlow <small>ADMIN</small></span>
+    <main className="login-page admin-login-page catalog-login-page">
+      <header className="catalog-login-header">
+        <Link to="/login" className="catalog-login-title">
+          <span className="catalog-login-mark"><BrandMark /></span>
+          <span>Electronic Parts Catalog System</span>
         </Link>
-        <div className="login-aside-copy">
-          <p className="eyebrow">ADMINISTRATOR CONSOLE</p>
-          <h1>Control the<br />workspace.<br />Protect access.</h1>
-          <p>Manage client accounts, roles, and permissions from one secure place.</p>
-        </div>
-        <div className="admin-aside-status"><span /> Private administrator access</div>
-        <span className="login-aside-foot">NEXUSFLOW ADMIN CONSOLE · 2026</span>
-      </section>
-      <section className="login-main">
-        <Outlet />
-      </section>
+        <span className="catalog-login-portal">ADMIN PORTAL</span>
+      </header>
+      <div className="catalog-login-layout">
+        <section className="catalog-login-info" aria-label="Automotive catalogue information">
+          <div className="catalog-login-illustration">
+            <img src="/login-automotive.svg" alt="Automotive parts arranged around a vehicle catalogue" />
+          </div>
+          <div className="catalog-login-warning">
+            <strong>LOGIN WARNING</strong>
+            <p>UNAUTHORIZED ACCESS TO THIS SYSTEM IS STRICTLY PROHIBITED.</p>
+            <p>System information is intended for authorized users only. Access is monitored. If you are not an authorized user, disconnect immediately.</p>
+          </div>
+        </section>
+        <section className="login-main">
+          <Outlet />
+        </section>
+      </div>
     </main>
   )
 }

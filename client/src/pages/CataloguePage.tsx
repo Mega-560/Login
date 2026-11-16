@@ -12,7 +12,7 @@ import {
 } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { Link } from 'react-router-dom'
-import { catalogueCategories, catalogueCurrency, catalogueParts, type CataloguePart } from '../data/catalogueParts'
+import { catalogueCurrency, type CataloguePart } from '../data/catalogueParts'
 import { useCart } from '../cart/CartContext'
 
 ModuleRegistry.registerModules([
@@ -63,18 +63,24 @@ const columnDefs: ColDef<CataloguePart>[] = [
 ]
 
 function CataloguePage() {
-  const [activePart, setActivePart] = useState(catalogueParts[0])
+  const [activePart, setActivePart] = useState<CataloguePart | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All parts')
-  const { itemCount } = useCart()
+  const { itemCount, catalogueParts, catalogueLoading, catalogueError } = useCart()
+  const catalogueCategories = useMemo(
+    () => ['All parts', ...new Set(catalogueParts.map(({ category }) => category))],
+    [catalogueParts],
+  )
+  const featuredPart = activePart ?? catalogueParts[0]
 
   const filteredParts = useMemo(
     () => category === 'All parts' ? catalogueParts : catalogueParts.filter((part) => part.category === category),
-    [category],
+    [catalogueParts, category],
   )
 
   function showPart(index: number) {
+    if (!catalogueParts.length) return
     const nextIndex = (index + catalogueParts.length) % catalogueParts.length
     setActiveIndex(nextIndex)
     setActivePart(catalogueParts[nextIndex])
@@ -90,22 +96,24 @@ function CataloguePage() {
     <section className="catalogue-page">
       <div className="catalogue-page-heading">
         <div>
-          <p className="eyebrow">NEXUSFLOW / SAMPLE PARTS</p>
+          <p className="eyebrow">NEXUSFLOW / PARTS CATALOGUE</p>
           <h1>Parts catalogue</h1>
-          <p>Browse sample parts, compare vehicle fitment, and check pricing and availability.</p>
+          <p>Browse live inventory, compare vehicle fitment, and check current pricing and availability.</p>
         </div>
         <div className="catalogue-heading-actions">
           <Link className="catalogue-card-view-link" to="/catalogue/inventory">Product inventory <span aria-hidden="true">→</span></Link>
-          <Link className="catalogue-card-view-link" to="/catalogue/pdf">PDF catalogue <span aria-hidden="true">→</span></Link>
+          <Link className="catalogue-card-view-link" to="/catalogue/pdf">Catalogue manuals <span aria-hidden="true">→</span></Link>
           <Link className="catalogue-card-view-link" to="/catalogue/cards">Browse cards <span aria-hidden="true">→</span></Link>
           <Link className="catalogue-cart-link" to="/cart" aria-label={`Open cart, ${itemCount} items`}>Cart <span>{itemCount}</span></Link>
           <span className="catalogue-count"><strong>{catalogueParts.length}</strong> parts available</span>
         </div>
       </div>
 
-      <section className="catalogue-showcase" aria-label="Featured parts image slider">
+      {catalogueLoading && <p className="catalogue-feedback" role="status">Loading current inventory…</p>}
+      {catalogueError && <p className="catalogue-feedback error" role="alert">{catalogueError}</p>}
+      {featuredPart ? <section className="catalogue-showcase" aria-label="Featured parts image slider">
         <div className="catalogue-showcase-image">
-          <img key={activePart.id} src={activePart.image} alt={activePart.imageAlt} />
+          <img key={featuredPart.id} src={featuredPart.image} alt={featuredPart.imageAlt} />
           <span className="catalogue-image-count">{String(activeIndex + 1).padStart(2, '0')} / {String(catalogueParts.length).padStart(2, '0')}</span>
           <button className="catalogue-slide-arrow catalogue-slide-previous" type="button" aria-label="Previous part" title="Show previous featured part" onClick={() => showPart(activeIndex - 1)}>‹</button>
           <button className="catalogue-slide-arrow catalogue-slide-next" type="button" aria-label="Next part" title="Show next featured part" onClick={() => showPart(activeIndex + 1)}>›</button>
@@ -124,22 +132,22 @@ function CataloguePage() {
               />
             ))}
           </div>
-          <span className="catalogue-category-tag">{activePart.category}</span>
-          <h2>{activePart.name}</h2>
-          <p className="catalogue-part-number">Part no. {activePart.id}</p>
-          <p className="catalogue-fitment"><span>Fits</span> {activePart.vehicle}</p>
+          <span className="catalogue-category-tag">{featuredPart.category}</span>
+          <h2>{featuredPart.name}</h2>
+          <p className="catalogue-part-number">Part no. {featuredPart.id}</p>
+          <p className="catalogue-fitment"><span>Fits</span> {featuredPart.vehicle}</p>
           <div className="catalogue-showcase-footer">
             <div>
               <span className="catalogue-price-label">Retail price</span>
-              <strong>{catalogueCurrency.format(activePart.price)}</strong>
+              <strong>{catalogueCurrency.format(featuredPart.price)}</strong>
             </div>
-            <span className={activePart.stock < 10 ? 'catalogue-stock-pill low' : 'catalogue-stock-pill'}>
-              {activePart.stock < 10 ? 'Low stock' : 'In stock'} · {activePart.stock}
+            <span className={featuredPart.stock < 10 ? 'catalogue-stock-pill low' : 'catalogue-stock-pill'}>
+              {featuredPart.stock < 10 ? 'Low stock' : 'In stock'} · {featuredPart.stock}
             </span>
           </div>
-          <span className="catalogue-warranty">Includes {activePart.warranty} parts warranty</span>
+          <span className="catalogue-warranty">Includes {featuredPart.warranty} parts warranty</span>
         </div>
-      </section>
+      </section> : <div className="catalogue-empty-state"><h2>{catalogueLoading ? 'Loading parts catalogue…' : 'No parts available yet'}</h2><p>{catalogueLoading ? 'Current inventory is being loaded.' : 'The catalogue is being prepared. Please check back soon.'}</p></div>}
 
       <section className="catalogue-table-section" aria-labelledby="catalogue-grid-title">
         <div className="catalogue-table-heading">

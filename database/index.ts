@@ -27,6 +27,21 @@ import {
   updateUserAvatar,
   upsertPasswordReset,
   updateAdminUser,
+  createManualCategory,
+  deleteCatalogueManual,
+  getCatalogueManualFile,
+  listCatalogueManuals,
+  listCustomerOrders,
+  listManualCategories,
+  listCatalogueParts,
+  placeCustomerOrder,
+  saveCatalogueManual,
+  saveCataloguePart,
+  setCataloguePartActive,
+  updateCustomerOrderStatus,
+  type CataloguePartInput,
+  type CustomerOrder,
+  type OrderItemInput,
 } from './database.js'
 import type { AuthUser } from './database.js'
 
@@ -136,7 +151,7 @@ app.use('/api/admin', (req, res, next) => {
     return
   }
 
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   res.status(204).end()
 })
@@ -155,11 +170,16 @@ const validateOrigin: RequestHandler = (req, res, next) => {
   next()
 }
 app.use('/api', validateOrigin)
+app.use('/api/admin/catalogue/manuals', express.raw({ type: 'application/pdf', limit: '15mb' }))
 app.use(express.json({ limit: '10kb', strict: true }))
 app.use(cookieParser())
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function routeParam(value: string | string[] | undefined): string | undefined {
+  return typeof value === 'string' ? value : undefined
 }
 
 function readText(body: unknown, key: string): string | undefined {
@@ -557,6 +577,230 @@ app.put('/api/admin/users/:id/permissions', requireSession, requireAdmin, (req, 
   }
   saveUserPagePermissions(id, permissions)
   res.json({ permissions })
+})
+
+app.get('/api/catalogue/parts', requireSession, (_req, res) => {
+  res.json({ parts: listCatalogueParts() })
+})
+
+app.get('/api/catalogue/manual-categories', requireSession, (_req, res) => {
+  res.json({ categories: listManualCategories() })
+})
+
+app.get('/api/catalogue/manuals', requireSession, (_req, res) => {
+  res.json({ manuals: listCatalogueManuals() })
+})
+
+app.get('/api/catalogue/manuals/:id/file', requireSession, (req, res) => {
+  const manualId = routeParam(req.params.id)
+  const manual = manualId ? getCatalogueManualFile(manualId) : undefined
+  if (!manual) {
+    res.status(404).json({ error: 'Catalogue manual not found.' })
+    return
+  }
+  res.setHeader('Content-Type', 'application/pdf')
+  res.setHeader('Content-Length', manual.data.byteLength)
+  res.setHeader('Content-Disposition', `inline; filename="${manual.name.replace(/["\\\r\n]/g, '_')}"`)
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.send(manual.data)
+})
+
+app.get('/api/admin/catalogue/parts', requireSession, requireAdmin, (_req, res) => {
+  res.json({ parts: listCatalogueParts(true) })
+})
+
+function readCataloguePart(body: unknown): CataloguePartInput | undefined {
+  if (!isRecord(body)) return undefined
+  const id = readText(body, 'id')?.toUpperCase()
+  const name = readText(body, 'name')
+  const category = readText(body, 'category')
+  const vehicle = readText(body, 'vehicle')
+  const warranty = readText(body, 'warranty')
+  const image = readText(body, 'image')
+  const imageAlt = readText(body, 'imageAlt')
+  const description = readText(body, 'description')
+  const price = body.price
+  const stock = body.stock
+  if (
+    !id || !/^[A-Z0-9][A-Z0-9_-]{1,39}$/.test(id)
+    || !name || name.length > 120
+    || !category || category.length > 80
+    || !vehicle || vehicle.length > 160
+    || typeof price !== 'number' || !Number.isFinite(price) || price < 0 || price > 1_000_000
+    || typeof stock !== 'number' || !Number.isSafeInteger(stock) || stock < 0 || stock > 1_000_000
+    || !warranty || warranty.length > 80
+    || !image || image.length > 500 || (!image.startsWith('/') && !image.startsWith('https://'))
+    || !imageAlt || imageAlt.length > 200
+    || !description || description.length > 2_000
+  ) return undefined
+  return { id, name, category, vehicle, price, stock, warranty, image, imageAlt, description }
+}
+
+app.post('/api/admin/catalogue/parts', requireSession, requireAdmin, (req, res) => {
+  const part = readCataloguePart(req.body)
+  if (!part) {
+    res.status(400).json({ error: 'Provide a valid part number, name, category, fitment, price, stock, warranty, image, and description.' })
+    return
+  }
+  try {
+    res.status(201).json({ part: saveCataloguePart(part) })
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+      res.status(409).json({ error: 'A part with that part number already exists.' })
+      return
+    }
+    throw error
+  }
+})
+
+app.put('/api/admin/catalogue/parts/:id', requireSession, requireAdmin, (req, res) => {
+  const part = readCataloguePart({ ...req.body, id: req.params.id })
+  if (!part) {
+    res.status(400).json({ error: 'Provide valid catalogue part details.' })
+    return
+  }
+  const existing = listCatalogueParts(true).some(({ id }) => id === part.id)
+  if (!existing) {
+    res.status(404).json({ error: 'Catalogue part not found.' })
+    return
+  }
+  res.json({ part: saveCataloguePart(part) })
+})
+
+app.patch('/api/admin/catalogue/parts/:id/active', requireSession, requireAdmin, (req, res) => {
+  if (!isRecord(req.body) || typeof req.body.active !== 'boolean') {
+    res.status(400).json({ error: 'Provide an active boolean value.' })
+    return
+  }
+  const partId = routeParam(req.params.id)
+  if (!partId || !setCataloguePartActive(partId, req.body.active)) {
+    res.status(404).json({ error: 'Catalogue part not found.' })
+    return
+  }
+  res.json({ success: true })
+})
+
+app.get('/api/admin/catalogue/manual-categories', requireSession, requireAdmin, (_req, res) => {
+  res.json({ categories: listManualCategories() })
+})
+
+app.get('/api/admin/catalogue/manuals', requireSession, requireAdmin, (_req, res) => {
+  res.json({ manuals: listCatalogueManuals() })
+})
+
+app.post('/api/admin/catalogue/manual-categories', requireSession, requireAdmin, (req, res) => {
+  const name = readText(req.body, 'name')
+  const parentId = readText(req.body, 'parentId')
+  if (!name || name.length > 80 || !parentId || !listManualCategories().some(({ id }) => id === parentId)) {
+    res.status(400).json({ error: 'Provide a category name and a valid parent category.' })
+    return
+  }
+  const category = createManualCategory(randomBytes(16).toString('hex'), parentId, name)
+  res.status(201).json({ category })
+})
+
+app.post('/api/admin/catalogue/manuals', requireSession, requireAdmin, (req, res) => {
+  const categoryId = typeof req.query.categoryId === 'string' ? req.query.categoryId : ''
+  const name = typeof req.query.name === 'string' ? req.query.name.trim() : ''
+  const data = Buffer.isBuffer(req.body) ? req.body : undefined
+  if (
+    !categoryId || !listManualCategories().some(({ id }) => id === categoryId)
+    || !name || name.length > 160 || !name.toLowerCase().endsWith('.pdf')
+    || !data?.byteLength || !data.subarray(0, 5).equals(Buffer.from('%PDF-'))
+  ) {
+    res.status(400).json({ error: 'Upload a valid non-empty PDF and select a valid category.' })
+    return
+  }
+  const manual = saveCatalogueManual(randomBytes(16).toString('hex'), categoryId, name, data)
+  res.status(201).json({ manual })
+})
+
+app.delete('/api/admin/catalogue/manuals/:id', requireSession, requireAdmin, (req, res) => {
+  const manualId = routeParam(req.params.id)
+  if (!manualId || !deleteCatalogueManual(manualId)) {
+    res.status(404).json({ error: 'Catalogue manual not found.' })
+    return
+  }
+  res.status(204).end()
+})
+
+app.post('/api/orders', requireSession, (req, res) => {
+  const user = res.locals.authUser as AuthUser
+  const customerName = readText(req.body, 'customerName')
+  const customerEmail = normalizeEmail(readText(req.body, 'customerEmail'))
+  const shippingAddress = readText(req.body, 'shippingAddress')
+  const rawItems = isRecord(req.body) && Array.isArray(req.body.items) ? req.body.items : undefined
+  if (
+    !customerName || customerName.length > 80
+    || !customerEmail || !shippingAddress || shippingAddress.length > 500
+    || !rawItems || rawItems.length < 1 || rawItems.length > 50
+  ) {
+    res.status(400).json({ error: 'Provide valid contact and delivery details with at least one catalogue part.' })
+    return
+  }
+  const items: OrderItemInput[] = []
+  for (const rawItem of rawItems) {
+    if (
+      !isRecord(rawItem) || typeof rawItem.partId !== 'string'
+      || !/^[A-Z0-9][A-Z0-9_-]{1,39}$/.test(rawItem.partId)
+      || typeof rawItem.quantity !== 'number' || !Number.isSafeInteger(rawItem.quantity)
+      || rawItem.quantity < 1 || rawItem.quantity > 1_000
+    ) {
+      res.status(400).json({ error: 'One or more order items are invalid.' })
+      return
+    }
+    items.push({ partId: rawItem.partId, quantity: rawItem.quantity })
+  }
+  try {
+    const order = placeCustomerOrder({
+      id: `NF-${randomBytes(8).toString('hex').toUpperCase()}`,
+      userId: user.id,
+      customerName,
+      customerEmail,
+      shippingAddress,
+    }, items)
+    res.status(201).json({ order })
+  } catch (error) {
+    if (error instanceof Error && /no longer available|only \d+ unit|inventory changed/i.test(error.message)) {
+      res.status(409).json({ error: error.message })
+      return
+    }
+    throw error
+  }
+})
+
+app.get('/api/orders', requireSession, (_req, res) => {
+  const user = res.locals.authUser as AuthUser
+  res.json({ orders: listCustomerOrders(user.id) })
+})
+
+app.get('/api/admin/orders', requireSession, requireAdmin, (_req, res) => {
+  res.json({ orders: listCustomerOrders() })
+})
+
+app.patch('/api/admin/orders/:id/status', requireSession, requireAdmin, (req, res) => {
+  const status = isRecord(req.body) ? req.body.status : undefined
+  if (status !== 'confirmed' && status !== 'fulfilled' && status !== 'cancelled') {
+    res.status(400).json({ error: 'Choose a valid order status.' })
+    return
+  }
+  const orderId = routeParam(req.params.id)
+  if (!orderId) {
+    res.status(400).json({ error: 'Provide a valid order ID.' })
+    return
+  }
+  const result = updateCustomerOrderStatus(orderId, status as CustomerOrder['status'])
+  if (result === 'missing') {
+    res.status(404).json({ error: 'Order not found.' })
+    return
+  }
+  if (result === 'invalid') {
+    res.status(409).json({ error: 'This order is already closed and cannot be changed.' })
+    return
+  }
+  const order = listCustomerOrders().find(({ id }) => id === orderId)
+  if (!order) throw new Error('Updated order could not be loaded.')
+  res.json({ order })
 })
 
 app.post('/api/auth/logout', requireSession, (_req, res) => {

@@ -14,10 +14,13 @@ import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage'
 import VerifyOtpPage from './modules/auth/pages/VerifyOtpPage'
 import RequireAuth from './modules/auth/RequireAuth'
 import './App.css'
+import './theme-colors.scss'
 
 const DashboardPage = lazy(() => import('./components/DashboardPage'))
 const StateMapPage = lazy(() => import('./components/StateMapPage'))
 const CataloguePage = lazy(() => import('./components/CataloguePage'))
+const CataloguePartsPage = lazy(() => import('./components/CataloguePartsPage'))
+const CatalogueOrdersPage = lazy(() => import('./components/CatalogueOrdersPage'))
 
 function App() {
   return (
@@ -39,6 +42,22 @@ function App() {
             <Route path="users" element={<AdminPage />} />
             <Route path="roles" element={<RolePage />} />
             <Route path="calendar" element={<CalendarPage />} />
+            <Route
+              path="parts"
+              element={(
+                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading parts inventory…</div>}>
+                  <CataloguePartsPage />
+                </Suspense>
+              )}
+            />
+            <Route
+              path="orders"
+              element={(
+                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading customer orders…</div>}>
+                  <CatalogueOrdersPage />
+                </Suspense>
+              )}
+            />
             <Route
               path="catalogue"
               element={(

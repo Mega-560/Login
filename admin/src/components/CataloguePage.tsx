@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import { adminApi, type CatalogueManual, type ManualCategory } from '../adminApi'
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
-const databaseName = 'nexusflow-catalogue'
-const objectStoreName = 'catalogue-items'
 const rootId = 'catalog-root'
 const defaultCategoryId = 'catalog-manuals'
 
@@ -22,7 +21,7 @@ interface PdfRecord {
   kind: 'pdf'
   parentId: string
   name: string
-  file: Blob
+  size: number
 }
 
 type CatalogueRecord = CategoryRecord | PdfRecord
@@ -30,40 +29,6 @@ type CatalogueRecord = CategoryRecord | PdfRecord
 interface SearchHit {
   page: number
   excerpt: string
-}
-
-function openCatalogueDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = window.indexedDB.open(databaseName, 1)
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(objectStoreName, { keyPath: 'id' })
-    }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error ?? new Error('Could not open catalogue storage.'))
-  })
-}
-
-function readCatalogueRecords(database: IDBDatabase): Promise<CatalogueRecord[]> {
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(objectStoreName, 'readonly')
-    const request = transaction.objectStore(objectStoreName).getAll()
-    request.onsuccess = () => resolve(request.result as CatalogueRecord[])
-    request.onerror = () => reject(request.error ?? new Error('Could not read the catalogue.'))
-  })
-}
-
-function saveCatalogueRecord(database: IDBDatabase, record: CatalogueRecord): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(objectStoreName, 'readwrite')
-    transaction.objectStore(objectStoreName).put(record)
-    transaction.oncomplete = () => resolve()
-    transaction.onerror = () => reject(transaction.error ?? new Error('Could not save this catalogue item.'))
-    transaction.onabort = () => reject(transaction.error ?? new Error('Saving this catalogue item was cancelled.'))
-  })
-}
-
-function createId() {
-  return crypto.randomUUID()
 }
 
 function CataloguePage() {
@@ -84,7 +49,6 @@ function CataloguePage() {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const database = useRef<IDBDatabase | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const viewerRef = useRef<HTMLDivElement>(null)
   const searchRequest = useRef(0)
@@ -110,45 +74,33 @@ function CataloguePage() {
 
   useEffect(() => {
     let active = true
-    void openCatalogueDatabase()
-      .then(async (db) => {
-        if (!active) {
-          db.close()
-          return
-        }
-        database.current = db
-        let savedRecords = await readCatalogueRecords(db)
-        if (!savedRecords.some((record) => record.id === rootId)) {
-          const starterRecords: CatalogueRecord[] = [
-            { id: rootId, kind: 'category', parentId: null, name: 'Catalog' },
-            { id: defaultCategoryId, kind: 'category', parentId: rootId, name: 'Catalogue Manuals' },
-          ]
-          await Promise.all(starterRecords.map((record) => saveCatalogueRecord(db, record)))
-          savedRecords = [...savedRecords, ...starterRecords]
-        } else if (!savedRecords.some((record) => record.id === defaultCategoryId)) {
-          const starterCategory: CategoryRecord = {
-            id: defaultCategoryId,
-            kind: 'category',
-            parentId: rootId,
-            name: 'Catalogue Manuals',
-          }
-          await saveCatalogueRecord(db, starterCategory)
-          savedRecords = [...savedRecords, starterCategory]
-        }
+    void Promise.all([adminApi.getManualCategories(), adminApi.getCatalogueManuals()])
+      .then(([categories, manuals]) => {
         if (!active) return
-        setRecords(savedRecords)
+        const categoryRecords: CategoryRecord[] = categories.map((category: ManualCategory) => ({
+          id: category.id,
+          kind: 'category',
+          parentId: category.parentId,
+          name: category.name,
+        }))
+        const manualRecords: PdfRecord[] = manuals.map((manual: CatalogueManual) => ({
+          id: manual.id,
+          kind: 'pdf',
+          parentId: manual.categoryId,
+          name: manual.name,
+          size: manual.size,
+        }))
+        setRecords([...categoryRecords, ...manualRecords])
         setIsLoading(false)
       })
       .catch((cause: unknown) => {
         if (active) {
-          setError(cause instanceof Error ? cause.message : 'Could not load catalogue storage.')
+          setError(cause instanceof Error ? cause.message : 'Could not load catalogue manuals.')
           setIsLoading(false)
         }
       })
     return () => {
       active = false
-      database.current?.close()
-      database.current = null
     }
   }, [])
 
@@ -174,7 +126,7 @@ function CataloguePage() {
     setSearchText('')
     setIsSearching(false)
     let loadingTask: ReturnType<typeof getDocument> | null = null
-    void selectedPdf.file.arrayBuffer()
+    void adminApi.getCatalogueManualFile(selectedPdf.id)
       .then((data) => {
         if (!active) return null
         loadingTask = getDocument({ data })
@@ -235,19 +187,14 @@ function CataloguePage() {
 
   async function addCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!database.current || !selectedCategory) return
+    if (!selectedCategory) return
     const name = categoryName.trim()
     if (!name) return
     setError('')
     setNotice('')
-    const category: CategoryRecord = {
-      id: createId(),
-      kind: 'category',
-      parentId: selectedCategory.id,
-      name,
-    }
     try {
-      await saveCatalogueRecord(database.current, category)
+      const saved = await adminApi.createManualCategory(name, selectedCategory.id)
+      const category: CategoryRecord = { id: saved.id, kind: 'category', parentId: saved.parentId, name: saved.name }
       setRecords((current) => [...current, category])
       setExpandedCategories((current) => new Set(current).add(selectedCategory.id))
       setCategoryName('')
@@ -258,28 +205,35 @@ function CataloguePage() {
   }
 
   async function addPdf(file: File | undefined) {
-    if (!file || !database.current || !selectedCategory) return
-    if (!file.name.toLowerCase().endsWith('.pdf') || file.size === 0) {
-      setError('Choose a non-empty PDF file.')
+    if (!file || !selectedCategory) return
+    if (!file.name.toLowerCase().endsWith('.pdf') || file.size === 0 || file.size > 15 * 1024 * 1024) {
+      setError('Choose a non-empty PDF file no larger than 15 MB.')
       return
     }
     setError('')
     setNotice('')
-    const pdf: PdfRecord = {
-      id: createId(),
-      kind: 'pdf',
-      parentId: selectedCategory.id,
-      name: file.name,
-      file,
-    }
     try {
-      await saveCatalogueRecord(database.current, pdf)
+      const saved = await adminApi.uploadCatalogueManual(selectedCategory.id, file)
+      const pdf: PdfRecord = { id: saved.id, kind: 'pdf', parentId: saved.categoryId, name: saved.name, size: saved.size }
       setRecords((current) => [...current, pdf])
       setSelectedPdfId(pdf.id)
       setExpandedCategories((current) => new Set(current).add(selectedCategory.id))
       setNotice(`"${file.name}" added to ${selectedCategory.name}.`)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not add this PDF.')
+    }
+  }
+
+  async function removePdf(pdf: PdfRecord) {
+    setError('')
+    setNotice('')
+    try {
+      await adminApi.deleteCatalogueManual(pdf.id)
+      setRecords((current) => current.filter((record) => record.id !== pdf.id))
+      if (selectedPdfId === pdf.id) setSelectedPdfId('')
+      setNotice(`"${pdf.name}" was removed from the shared catalogue.`)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not remove this catalogue manual.')
     }
   }
 
@@ -389,6 +343,15 @@ function CataloguePage() {
                 title={`Open ${child.name}`}
               >
                 <span>{child.name}</span>
+              </button>
+              <button
+                type="button"
+                className="catalogue-tree-delete"
+                aria-label={`Delete ${child.name}`}
+                title={`Delete ${child.name}`}
+                onClick={() => void removePdf(child)}
+              >
+                Delete
               </button>
             </div>
           ))}

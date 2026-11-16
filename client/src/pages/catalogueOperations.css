@@ -1,0 +1,262 @@
+.client-manuals-layout {
+  display: grid;
+  min-height: min(72vh, 760px);
+  grid-template-columns: minmax(240px, 0.32fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.client-manuals-list,
+.client-manual-viewer,
+.client-order-card {
+  min-width: 0;
+  border: 1px solid var(--theme-border, #e1e6df);
+  border-radius: 6px;
+  background: var(--theme-surface, #fff);
+}
+
+.client-manuals-list {
+  padding: 14px;
+}
+
+.client-manuals-search {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--theme-muted, #748078);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.client-manuals-search input {
+  width: 100%;
+  min-height: 39px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-border, #d9e0d8);
+  border-radius: 4px;
+  color: var(--theme-text, #28372f);
+  background: var(--theme-surface, #fff);
+  font: inherit;
+}
+
+.client-manuals-list ul,
+.client-order-card ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.client-manuals-list li button {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--theme-text, #35443c);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.client-manuals-list li button:hover,
+.client-manuals-list li button.is-selected {
+  border-color: var(--theme-border, #d9e0d8);
+  background: var(--theme-page, #f7f8f4);
+}
+
+.client-manual-file-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--theme-accent, #ff9a00);
+  background: var(--theme-accent-soft, #fff4dc);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.client-manuals-list li button > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.client-manuals-list strong {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+
+.client-manuals-list small {
+  color: var(--theme-muted, #748078);
+  font-size: 9px;
+}
+
+.client-manual-viewer {
+  display: grid;
+  min-height: 500px;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.client-manual-viewer > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--theme-border, #e1e6df);
+}
+
+.client-manual-viewer .eyebrow {
+  margin-bottom: 4px;
+}
+
+.client-manual-viewer h2 {
+  margin: 0;
+  color: var(--theme-text, #28372f);
+  font-size: 15px;
+}
+
+.client-manual-viewer iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  border: 0;
+  background: #f0f1f2;
+}
+
+.client-manual-viewer > .catalogue-empty,
+.client-manual-viewer > .catalogue-empty-state {
+  margin: auto;
+  padding: 20px;
+}
+
+.client-order-list {
+  display: grid;
+  gap: 13px;
+}
+
+.client-order-card {
+  display: grid;
+  gap: 13px;
+  padding: 16px;
+}
+
+.client-order-card > header,
+.client-order-card > footer,
+.client-order-card li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.client-order-card > header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--theme-border, #e1e6df);
+}
+
+.client-order-card .eyebrow {
+  margin-bottom: 4px;
+}
+
+.client-order-card h2 {
+  margin: 0;
+  color: var(--theme-text, #28372f);
+  font-size: 14px;
+}
+
+.client-order-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.client-order-status {
+  padding: 4px 8px;
+  border-radius: 20px;
+  color: #785a32;
+  background: #f7f0e2;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.client-order-status.status-confirmed,
+.client-order-status.status-fulfilled {
+  color: #315d43;
+  background: #edf5e9;
+}
+
+.client-order-status.status-cancelled {
+  color: #8b443d;
+  background: #fbefec;
+}
+
+.client-order-card ul {
+  gap: 9px;
+}
+
+.client-order-card li {
+  color: var(--theme-text, #35443c);
+  font-size: 12px;
+}
+
+.client-order-card li small {
+  display: block;
+  margin-top: 3px;
+  color: var(--theme-muted, #748078);
+  font-size: 10px;
+}
+
+.client-order-card > footer {
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--theme-border, #e1e6df);
+  color: var(--theme-muted, #748078);
+  font-size: 10px;
+}
+
+.client-order-card > footer strong {
+  color: var(--theme-text, #28372f);
+  white-space: nowrap;
+}
+
+.client-order-payment-note {
+  margin: 0;
+  color: #785a32;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .client-manuals-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .client-manual-viewer {
+    min-height: 440px;
+  }
+
+  .client-manual-viewer iframe {
+    min-height: 440px;
+  }
+}
+
+@media (max-width: 520px) {
+  .client-order-card > header,
+  .client-order-card > footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .client-order-statuses {
+    justify-content: flex-start;
+  }
+}
