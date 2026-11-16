@@ -5698,6 +5698,11 @@
 	color: var(--theme-accent-hover, #E68A00);
 }
 
+:root[data-nexus-theme] .catalogue-card-view-link:hover,
+:root[data-nexus-theme] .catalogue-cart-link:hover {
+	color: var(--theme-hover-text, #fff);
+}
+
 :root[data-nexus-theme] .catalogue-grid {
 	--ag-border-color: var(--theme-border, #ebe2da);
 	--ag-background-color: var(--theme-surface, #fff);
