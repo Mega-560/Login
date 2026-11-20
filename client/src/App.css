@@ -353,6 +353,173 @@
 	gap: 12px;
 }
 
+.global-search {
+	position: relative;
+	display: flex;
+	width: clamp(170px, 22vw, 280px);
+	height: 42px;
+	align-items: center;
+	border: 1px solid var(--theme-border, #dfe5dd);
+	border-radius: 6px;
+	background: var(--theme-surface, #fff);
+	color: var(--theme-text, #28372f);
+}
+
+.global-search > input {
+	width: 100%;
+	min-width: 0;
+	height: 100%;
+	padding: 0 72px 0 12px;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.global-search > input::placeholder {
+	color: var(--theme-muted, #768279);
+}
+
+.global-search-submit,
+.global-search-microphone {
+	display: grid;
+	width: 32px;
+	height: 32px;
+	flex: 0 0 32px;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 5px;
+	color: var(--theme-muted, #768279);
+	background: transparent;
+	cursor: pointer;
+}
+
+.global-search-microphone {
+	position: absolute;
+	right: 34px;
+}
+
+.global-search-submit svg,
+.global-search-microphone svg {
+	width: 18px;
+	height: 18px;
+}
+
+.global-search-submit:hover,
+.global-search-microphone:hover,
+.global-search-microphone.is-listening {
+	color: var(--theme-accent, #285246);
+	background: var(--theme-accent-soft, #edf3e9);
+}
+
+.global-search-submit:focus-visible,
+.global-search-microphone:focus-visible {
+	outline: 2px solid var(--theme-accent, #285246);
+	outline-offset: 1px;
+}
+
+.global-search-popover {
+	position: absolute;
+	z-index: 20;
+	top: calc(100% + 8px);
+	right: 0;
+	width: max(100%, 300px);
+	max-width: min(390px, calc(100vw - 24px));
+	overflow: hidden;
+	border: 1px solid var(--theme-border, #dfe5dd);
+	border-radius: 8px;
+	background: var(--theme-surface, #fff);
+	box-shadow: 0 14px 34px rgba(28, 44, 35, 0.18);
+	color: var(--theme-text, #28372f);
+}
+
+.global-search-popover ul {
+	display: grid;
+	max-height: min(420px, 65vh);
+	overflow-y: auto;
+	margin: 0;
+	padding: 5px;
+	list-style: none;
+}
+
+.global-search-popover li button {
+	display: grid;
+	width: 100%;
+	gap: 3px;
+	padding: 10px 11px;
+	border: 0;
+	border-radius: 5px;
+	color: inherit;
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+}
+
+.global-search-popover li button:hover,
+.global-search-popover li button:focus-visible {
+	outline: 0;
+	background: var(--theme-accent-soft, #edf3e9);
+}
+
+.global-search-popover li strong {
+	font-size: 13px;
+	font-weight: 650;
+}
+
+.global-search-popover mark {
+	padding: 0 1px;
+	border-radius: 2px;
+	color: var(--theme-accent, #285246);
+	background: var(--theme-accent-soft, #edf3e9);
+}
+
+.global-search-popover li span,
+.global-search-message {
+	margin: 0;
+	color: var(--theme-muted, #768279);
+	font-size: 11px;
+}
+
+.global-search-message {
+	padding: 12px;
+}
+
+.language-picker {
+	display: inline-flex;
+	align-items: center;
+}
+
+.language-picker select {
+	min-height: 36px;
+	padding: 0 28px 0 10px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 5px;
+	color: #f2f5ef;
+	background: #193a32;
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.language-picker select:focus-visible {
+	outline: 2px solid #d8ed8d;
+	outline-offset: 2px;
+}
+
+.catalog-login-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.catalog-login-header .language-picker select {
+	border-color: rgba(255, 255, 255, 0.35);
+}
+
 .topbar-cart-link {
 	position: relative;
 	display: inline-flex;
@@ -405,8 +572,15 @@
 }
 
 .topbar-user-copy {
+	position: relative;
 	display: grid;
 	gap: 2px;
+}
+
+.not-found-language {
+	position: absolute;
+	top: 24px;
+	right: 24px;
 }
 
 .topbar-user-copy strong {
@@ -1353,6 +1527,14 @@
 		gap: 8px;
 	}
 
+	.global-search {
+		width: clamp(120px, 24vw, 180px);
+	}
+
+	.global-search > input {
+		padding-right: 68px;
+	}
+
 	.topbar-cart-link {
 		min-height: 34px;
 		gap: 5px;
@@ -1366,6 +1548,49 @@
 
 	.topbar-user-copy small {
 		display: none;
+	}
+
+	@media (max-width: 420px) {
+		.topbar > div:first-child {
+			display: none;
+		}
+
+		.topbar-actions {
+			gap: 4px;
+		}
+
+		.global-search {
+			width: 118px;
+			height: 38px;
+		}
+
+		.global-search > input {
+			padding-right: 48px;
+			padding-left: 8px;
+			font-size: 12px;
+		}
+
+		.global-search-submit,
+		.global-search-microphone {
+			width: 24px;
+			flex-basis: 24px;
+		}
+
+		.global-search-microphone {
+			right: 26px;
+		}
+
+		.topbar-cart-label,
+		.topbar-cart-count {
+			display: none;
+		}
+
+		.language-picker select {
+			min-height: 32px;
+			padding-right: 18px;
+			padding-left: 6px;
+			font-size: 10px;
+		}
 	}
 
 	.topbar-user-copy strong {

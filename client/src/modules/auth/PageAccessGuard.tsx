@@ -2,6 +2,7 @@ import { Navigate, Outlet, useOutletContext } from 'react-router-dom'
 import type { AuthenticatedSessionUser } from './authApi'
 import { firstAccessiblePage, type ClientPageKey } from '../../pageAccess'
 import HomePage from '../../pages/HomePage'
+import { useLanguage } from '../../LanguageContext'
 
 export function RequirePageAccess({ page }: { page: ClientPageKey }) {
   const user = useOutletContext<AuthenticatedSessionUser>()
@@ -15,11 +16,13 @@ export function HomePageAccess() {
 }
 
 export function AccessDeniedPage() {
+  const { t } = useLanguage()
+
   return (
     <section className="content-page" role="alert">
-      <p className="eyebrow">ACCESS RESTRICTED</p>
-      <h1>This page is not available to your account.</h1>
-      <p className="page-lead">Ask your administrator to grant access if you need this page.</p>
+      <p className="eyebrow">{t('ACCESS RESTRICTED')}</p>
+      <h1>{t('This page is not available to your account.')}</h1>
+      <p className="page-lead">{t('Ask your administrator to grant access if you need this page.')}</p>
     </section>
   )
 }

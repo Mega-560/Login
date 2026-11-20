@@ -3,6 +3,9 @@ import Modal from 'react-bootstrap/Modal'
 import { useNavigate } from 'react-router-dom'
 import type { SessionUser } from '../modules/auth/authApi'
 import { authApi } from '../modules/auth/authApi'
+import { useLanguage } from '../LanguageContext'
+import LanguageSelector from './LanguageSelector'
+import GlobalSearch from './GlobalSearch'
 
 interface HeaderProps {
   user: SessionUser
@@ -13,6 +16,7 @@ const maxImageBytes = 512 * 1024
 
 function Header({ user }: HeaderProps) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState(user)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -134,10 +138,12 @@ function Header({ user }: HeaderProps) {
   return (
     <header className="topbar">
       <div>
-        <span className="topbar-kicker">NEXUSFLOW / WORKSPACE</span>
-        <p className="topbar-caption">A clearer view of what matters.</p>
+        <span className="topbar-kicker">NEXUSFLOW / {t('Workspace').toUpperCase()}</span>
+        <p className="topbar-caption">{t('A clearer view of what matters.')}</p>
       </div>
       <div className="topbar-actions">
+        <GlobalSearch />
+        <LanguageSelector />
         <div
           className={`topbar-profile-wrap${isMenuOpen ? ' is-open' : ''}`}
           onMouseEnter={() => setIsMenuOpen(true)}
@@ -156,8 +162,8 @@ function Header({ user }: HeaderProps) {
             aria-haspopup="true"
             aria-expanded={isMenuOpen}
             aria-controls="account-profile-menu"
-            aria-label="Account options"
-            title="Open account options"
+            aria-label={t('Account options')}
+            title={t('Open account options')}
             onClick={() => setIsMenuOpen((open) => !open)}
           >
             <span className="avatar avatar-small">
@@ -166,14 +172,14 @@ function Header({ user }: HeaderProps) {
             </span>
             <span className="topbar-profile-caret" aria-hidden="true">⌄</span>
           </button>
-          <div className="profile-dropdown" id="account-profile-menu" role="group" aria-label="Account options">
+          <div className="profile-dropdown" id="account-profile-menu" role="group" aria-label={t('Account options')}>
             <div className="profile-dropdown-heading">
               <strong>{profile.name}</strong>
               <span>{profile.email}</span>
             </div>
-            <button type="button" onClick={openProfile}>Profile settings</button>
+            <button type="button" onClick={openProfile}>{t('Profile settings')}</button>
             <button type="button" onClick={handleLogout} disabled={isLoggingOut}>
-              {isLoggingOut ? 'Logging out…' : 'Log out'}
+              {isLoggingOut ? t('Logging out…') : t('Log out')}
             </button>
           </div>
         </div>
@@ -191,9 +197,9 @@ function Header({ user }: HeaderProps) {
       >
         <div className="profile-modal-heading">
           <div>
-            <span className="topbar-kicker">ACCOUNT SETTINGS</span>
-            <h2 id="profile-modal-title">Your profile</h2>
-            <p>Update the details and photo shown across your workspace.</p>
+            <span className="topbar-kicker">{t('ACCOUNT SETTINGS')}</span>
+            <h2 id="profile-modal-title">{t('Your profile')}</h2>
+            <p>{t('Update the details and photo shown across your workspace.')}</p>
           </div>
           <button className="profile-modal-close" type="button" aria-label="Close profile settings" title="Close profile settings" onClick={() => setIsProfileOpen(false)}>×</button>
         </div>
@@ -205,35 +211,35 @@ function Header({ user }: HeaderProps) {
             </span>
             <div className="profile-photo-controls">
               <label className="profile-file-label">
-                Choose a photo
+                {t('Choose a photo')}
                 <input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} />
               </label>
-              <small>PNG, JPEG, or WebP · up to 512 KB</small>
+              <small>{t('PNG, JPEG, or WebP · up to 512 KB')}</small>
               {selectedImage && (
                 <button className="profile-secondary-button" type="button" onClick={uploadImage} disabled={isUploading}>
-                  {isUploading ? 'Uploading…' : 'Upload photo'}
+                  {isUploading ? t('Uploading…') : t('Upload photo')}
                 </button>
               )}
               {profile.avatarUrl && !selectedImage && (
                 <button className="profile-remove-photo" type="button" onClick={removeImage} disabled={isUploading}>
-                  {isUploading ? 'Removing…' : 'Remove photo'}
+                  {isUploading ? t('Removing…') : t('Remove photo')}
                 </button>
               )}
             </div>
           </div>
           <label className="profile-field">
-            <span>Full name</span>
+            <span>{t('Full name')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} required autoComplete="name" autoFocus />
           </label>
           <label className="profile-field">
-            <span>Email address</span>
+            <span>{t('Email address')}</span>
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
           </label>
           {profileError && <p className="profile-form-error" role="alert">{profileError}</p>}
           <div className="profile-modal-actions">
-            <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>Cancel</button>
+            <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>{t('Cancel')}</button>
             <button className="profile-save-button" type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving…' : 'Save changes'}
+              {isSaving ? t('Saving…') : t('Save changes')}
             </button>
           </div>
         </form>

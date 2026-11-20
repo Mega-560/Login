@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { SessionUser } from '../modules/auth/authApi'
 import { authApi } from '../modules/auth/authApi'
 import { useCart } from '../cart/CartContext'
+import { useLanguage } from '../LanguageContext'
+import LanguageSelector from './LanguageSelector'
+import GlobalSearch from './GlobalSearch'
 
 interface HeaderProps {
   user: SessionUser
@@ -15,6 +18,7 @@ const maxImageBytes = 512 * 1024
 function Header({ user }: HeaderProps) {
   const navigate = useNavigate()
   const { itemCount } = useCart()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState(user)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -136,17 +140,19 @@ function Header({ user }: HeaderProps) {
   return (
     <header className="topbar">
       <div>
-        <span className="topbar-kicker">NEXUSFLOW / WORKSPACE</span>
-        <p className="topbar-caption">A clearer view of what matters.</p>
+        <span className="topbar-kicker">NEXUSFLOW / {t('Workspace').toUpperCase()}</span>
+        <p className="topbar-caption">{t('A clearer view of what matters.')}</p>
       </div>
       <div className="topbar-actions">
-        <Link className="topbar-cart-link" to="/cart" aria-label={`Shopping cart with ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`} title={`Open cart${itemCount > 0 ? ` (${itemCount} ${itemCount === 1 ? 'item' : 'items'})` : ''}`}>
+        <GlobalSearch />
+        <LanguageSelector />
+        <Link className="topbar-cart-link" to="/cart" aria-label={`${t('Shopping cart with')} ${itemCount} ${t(itemCount === 1 ? 'item' : 'items')}`} title={`${t('Open cart')}${itemCount > 0 ? ` (${itemCount} ${t(itemCount === 1 ? 'item' : 'items')})` : ''}`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.5L22 8H6" />
             <circle cx="10" cy="20" r="1" />
             <circle cx="18" cy="20" r="1" />
           </svg>
-          <span className="topbar-cart-label">Cart</span>
+          <span className="topbar-cart-label">{t('Cart')}</span>
           <span className="topbar-cart-count">{itemCount}</span>
         </Link>
         <div
@@ -167,8 +173,8 @@ function Header({ user }: HeaderProps) {
             aria-haspopup="true"
             aria-expanded={isMenuOpen}
             aria-controls="account-profile-menu"
-            aria-label="Account options"
-            title="Open account options"
+            aria-label={t('Account options')}
+            title={t('Open account options')}
             onClick={() => setIsMenuOpen((open) => !open)}
           >
             <span className="avatar avatar-small">
@@ -177,14 +183,14 @@ function Header({ user }: HeaderProps) {
             </span>
             <span className="topbar-profile-caret" aria-hidden="true">⌄</span>
           </button>
-          <div className="profile-dropdown" id="account-profile-menu" role="group" aria-label="Account options">
+          <div className="profile-dropdown" id="account-profile-menu" role="group" aria-label={t('Account options')}>
             <div className="profile-dropdown-heading">
               <strong>{profile.name}</strong>
               <span>{profile.email}</span>
             </div>
-            <button type="button" onClick={openProfile}>Profile settings</button>
+            <button type="button" onClick={openProfile}>{t('Profile settings')}</button>
             <button type="button" onClick={handleLogout} disabled={isLoggingOut}>
-              {isLoggingOut ? 'Logging out…' : 'Log out'}
+              {isLoggingOut ? t('Logging out…') : t('Log out')}
             </button>
           </div>
         </div>
@@ -202,11 +208,11 @@ function Header({ user }: HeaderProps) {
       >
         <div className="profile-modal-heading">
           <div>
-            <span className="topbar-kicker">ACCOUNT SETTINGS</span>
-            <h2 id="profile-modal-title">Your profile</h2>
-            <p>Update the details and photo shown across your workspace.</p>
+            <span className="topbar-kicker">{t('ACCOUNT SETTINGS')}</span>
+            <h2 id="profile-modal-title">{t('Your profile')}</h2>
+            <p>{t('Update the details and photo shown across your workspace.')}</p>
           </div>
-          <button className="profile-modal-close" type="button" aria-label="Close profile settings" title="Close profile settings" onClick={() => setIsProfileOpen(false)}>×</button>
+          <button className="profile-modal-close" type="button" aria-label={t('Close profile settings')} title={t('Close profile settings')} onClick={() => setIsProfileOpen(false)}>×</button>
         </div>
         <form onSubmit={saveProfile}>
           <div className="profile-photo-editor">
@@ -216,35 +222,35 @@ function Header({ user }: HeaderProps) {
             </span>
             <div className="profile-photo-controls">
               <label className="profile-file-label">
-                Choose a photo
+                {t('Choose a photo')}
                 <input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} />
               </label>
-              <small>PNG, JPEG, or WebP · up to 512 KB</small>
+              <small>{t('PNG, JPEG, or WebP · up to 512 KB')}</small>
               {selectedImage && (
                 <button className="profile-secondary-button" type="button" onClick={uploadImage} disabled={isUploading}>
-                  {isUploading ? 'Uploading…' : 'Upload photo'}
+                  {isUploading ? t('Uploading…') : t('Upload photo')}
                 </button>
               )}
               {profile.avatarUrl && !selectedImage && (
                 <button className="profile-remove-photo" type="button" onClick={removeImage} disabled={isUploading}>
-                  {isUploading ? 'Removing…' : 'Remove photo'}
+                  {isUploading ? t('Removing…') : t('Remove photo')}
                 </button>
               )}
             </div>
           </div>
           <label className="profile-field">
-            <span>Full name</span>
+            <span>{t('Full name')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} required autoComplete="name" autoFocus />
           </label>
           <label className="profile-field">
-            <span>Email address</span>
+            <span>{t('Email address')}</span>
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
           </label>
           {profileError && <p className="profile-form-error" role="alert">{profileError}</p>}
           <div className="profile-modal-actions">
-            <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>Cancel</button>
+            <button className="profile-secondary-button" type="button" onClick={() => setIsProfileOpen(false)}>{t('Cancel')}</button>
             <button className="profile-save-button" type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving…' : 'Save changes'}
+              {isSaving ? t('Saving…') : t('Save changes')}
             </button>
           </div>
         </form>

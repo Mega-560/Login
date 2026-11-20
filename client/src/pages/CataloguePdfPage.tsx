@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { catalogueApi, type CatalogueManual } from '../data/catalogueApi'
+import { useLanguage } from '../LanguageContext'
 import './catalogueOperations.css'
 
 function CataloguePdfPage() {
+  const { t } = useLanguage()
   const [manuals, setManuals] = useState<CatalogueManual[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [search, setSearch] = useState('')
@@ -71,24 +73,24 @@ function CataloguePdfPage() {
     <section className="catalogue-page catalogue-manuals-page">
       <header className="catalogue-page-heading">
         <div>
-          <p className="eyebrow">PRODUCT LIBRARY / DOCUMENTS</p>
-          <h1>Catalogue manuals</h1>
-          <p>Browse product manuals and catalogue PDFs shared by the parts team.</p>
+          <p className="eyebrow">{t('PRODUCT LIBRARY / DOCUMENTS')}</p>
+          <h1>{t('Catalogue manuals')}</h1>
+          <p>{t('Browse product manuals and catalogue PDFs shared by the parts team.')}</p>
         </div>
-        <Link className="catalogue-card-view-link" to="/catalogue/cards">Browse parts <span aria-hidden="true">→</span></Link>
+        <Link className="catalogue-card-view-link" to="/catalogue/cards">{t('Browse parts')} <span aria-hidden="true">→</span></Link>
       </header>
 
       {error && <p className="catalogue-feedback error" role="alert">{error}</p>}
 
       <div className="client-manuals-layout">
-        <aside className="client-manuals-list" aria-label="Available catalogue manuals">
+        <aside className="client-manuals-list" aria-label={t('Available catalogue manuals')}>
           <label className="client-manuals-search">
-            <span>Search manuals</span>
-            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Title or category" />
+            <span>{t('Search manuals')}</span>
+            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('Title or category')} />
           </label>
-          {isLoading ? <p className="catalogue-empty" role="status">Loading manuals…</p>
+          {isLoading ? <p className="catalogue-empty" role="status">{t('Loading manuals…')}</p>
             : filteredManuals.length === 0
-              ? <p className="catalogue-empty">{manuals.length ? 'No manuals match your search.' : 'No manuals have been published yet.'}</p>
+              ? <p className="catalogue-empty">{manuals.length ? t('No manuals match your search.') : t('No manuals have been published yet.')}</p>
               : <ul>
                 {filteredManuals.map((manual) => (
                   <li key={manual.id}>
@@ -105,17 +107,17 @@ function CataloguePdfPage() {
                 ))}
               </ul>}
         </aside>
-        <section className="client-manual-viewer" aria-label="Catalogue manual viewer">
+        <section className="client-manual-viewer" aria-label={t('Catalogue manual viewer')}>
           {selectedManual ? (
             <>
               <header>
                 <div><p className="eyebrow">{selectedManual.categoryName}</p><h2>{selectedManual.name}</h2></div>
-                {fileUrl && <a className="catalogue-secondary-button" href={fileUrl} download={selectedManual.name}>Download PDF</a>}
+                {fileUrl && <a className="catalogue-secondary-button" href={fileUrl} download={selectedManual.name}>{t('Download PDF')}</a>}
               </header>
-              {isLoadingFile ? <p className="catalogue-empty" role="status">Opening manual…</p>
+              {isLoadingFile ? <p className="catalogue-empty" role="status">{t('Opening manual…')}</p>
                 : fileUrl && <iframe title={selectedManual.name} src={fileUrl} />}
             </>
-          ) : !isLoading && <div className="catalogue-empty-state"><h2>Manuals will appear here</h2><p>When the parts team publishes a PDF, you can open it in this viewer.</p></div>}
+          ) : !isLoading && <div className="catalogue-empty-state"><h2>{t('Manuals will appear here')}</h2><p>{t('When the parts team publishes a PDF, you can open it in this viewer.')}</p></div>}
         </section>
       </div>
     </section>

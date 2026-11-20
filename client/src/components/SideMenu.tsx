@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import type { AuthenticatedSessionUser } from '../modules/auth/authApi'
 import { clientPages } from '../pageAccess'
 import BrandMark from './BrandMark'
+import { useLanguage } from '../LanguageContext'
 
 type MenuIconName = 'home' | 'about' | 'contact' | 'catalogue' | 'manuals' | 'orders' | 'theme'
 
@@ -26,6 +27,8 @@ interface SideMenuProps {
 }
 
 function SideMenu({ user, isCollapsed, onToggle }: SideMenuProps) {
+  const { t } = useLanguage()
+
   return (
     <aside className="sidebar">
       <div className="brand-lockup">
@@ -33,48 +36,48 @@ function SideMenu({ user, isCollapsed, onToggle }: SideMenuProps) {
         <span className="brand-name">NexusFlow</span>
       </div>
 
-      <div className="sidebar-label">Workspace</div>
-      <nav className="sidebar-nav" aria-label="Main navigation">
-        <NavLink to="/catalogue" className="sidebar-link" aria-label="Parts catalogue" title="Browse the parts catalogue">
+      <div className="sidebar-label">{t('Workspace')}</div>
+      <nav className="sidebar-nav" aria-label={t('Main navigation')}>
+        <NavLink to="/catalogue" className="sidebar-link" aria-label={t('Parts catalogue')} title={t('Browse the parts catalogue')}>
           <MenuIcon name="catalogue" />
-          <span className="nav-label">Catalogue</span>
+          <span className="nav-label">{t('Catalogue')}</span>
         </NavLink>
-        <NavLink to="/catalogue/inventory" className="sidebar-link" aria-label="Product inventory" title="View product inventory">
+        <NavLink to="/catalogue/inventory" className="sidebar-link" aria-label={t('Product inventory')} title={t('View product inventory')}>
           <MenuIcon name="catalogue" />
-          <span className="nav-label">Inventory</span>
+          <span className="nav-label">{t('Inventory')}</span>
         </NavLink>
-        <NavLink to="/catalogue/pdf" className="sidebar-link" aria-label="Catalogue manuals" title="View shared catalogue manuals">
+        <NavLink to="/catalogue/pdf" className="sidebar-link" aria-label={t('Catalogue manuals')} title={t('View shared catalogue manuals')}>
           <MenuIcon name="manuals" />
-          <span className="nav-label">Manuals</span>
+          <span className="nav-label">{t('Manuals')}</span>
         </NavLink>
-        <NavLink to="/orders" className="sidebar-link" aria-label="Order history" title="Track your parts orders">
+        <NavLink to="/orders" className="sidebar-link" aria-label={t('Order history')} title={t('Track your parts orders')}>
           <MenuIcon name="orders" />
-          <span className="nav-label">My orders</span>
+          <span className="nav-label">{t('My orders')}</span>
         </NavLink>
         {clientPages.filter(({ key }) => user.permissions[key].view).map(({ key, label, path }) => (
-          <NavLink key={key} to={path} end={key === 'home'} className="sidebar-link" aria-label={label} title={label}>
+          <NavLink key={key} to={path} end={key === 'home'} className="sidebar-link" aria-label={t(label)} title={t(label)}>
             <MenuIcon name={key} />
-            <span className="nav-label">{label}</span>
+            <span className="nav-label">{t(label)}</span>
           </NavLink>
         ))}
-        <NavLink to="/theme" className="sidebar-link" aria-label="Theme settings" title="Customize the client portal theme">
+        <NavLink to="/theme" className="sidebar-link" aria-label={t('Theme settings')} title={t('Customize the client portal theme')}>
           <MenuIcon name="theme" />
-          <span className="nav-label">Theme</span>
+          <span className="nav-label">{t('Theme')}</span>
         </NavLink>
       </nav>
 
       <div className="sidebar-bottom">
         <div className="sidebar-note">
           <span className="status-dot" />
-          <span className="nav-label">All systems operational</span>
+          <span className="nav-label">{t('All systems operational')}</span>
         </div>
       </div>
 
       <button
         className="sidebar-toggle"
         type="button"
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={t(isCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
+        title={t(isCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
         aria-expanded={!isCollapsed}
         onClick={onToggle}
       >

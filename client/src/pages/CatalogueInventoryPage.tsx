@@ -14,6 +14,7 @@ import Modal from 'react-bootstrap/Modal'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/CartContext'
 import { catalogueCurrency, type CataloguePart } from '../data/catalogueParts'
+import { useLanguage } from '../LanguageContext'
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -34,6 +35,7 @@ function escapeHtml(value: string) {
 }
 
 function CatalogueInventoryPage() {
+  const { t } = useLanguage()
   const { catalogueParts, catalogueLoading, catalogueError } = useCart()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All parts')
@@ -61,7 +63,7 @@ function CatalogueInventoryPage() {
   const columnDefs = useMemo<ColDef<CataloguePart>[]>(() => [
     {
       colId: 'image',
-      headerName: 'IMAGE',
+      headerName: t('IMAGE'),
       sortable: false,
       filter: false,
       minWidth: 105,
@@ -71,8 +73,8 @@ function CatalogueInventoryPage() {
           <button
             className="catalogue-grid-image-button"
             type="button"
-            aria-label={`Preview ${data.name}`}
-            title={`Preview ${data.name}`}
+            aria-label={`${t('Preview')} ${data.name}`}
+            title={`${t('Preview')} ${data.name}`}
             onClick={(event) => {
               event.stopPropagation()
               setPdfError('')
@@ -84,14 +86,14 @@ function CatalogueInventoryPage() {
         )
         : null,
     },
-    { field: 'id', headerName: 'PART NUMBER', tooltipField: 'id', minWidth: 145 },
-    { field: 'name', headerName: 'PRODUCT', tooltipField: 'name', minWidth: 195, flex: 1 },
-    { field: 'description', headerName: 'DESCRIPTION', tooltipField: 'description', minWidth: 245, flex: 1 },
-    { field: 'category', headerName: 'CATEGORY', tooltipField: 'category', minWidth: 140 },
-    { field: 'vehicle', headerName: 'VEHICLE FITMENT', tooltipField: 'vehicle', minWidth: 190 },
+    { field: 'id', headerName: t('PART NUMBER'), tooltipField: 'id', minWidth: 145 },
+    { field: 'name', headerName: t('PRODUCT'), tooltipField: 'name', minWidth: 195, flex: 1 },
+    { field: 'description', headerName: t('DESCRIPTION'), tooltipField: 'description', minWidth: 245, flex: 1 },
+    { field: 'category', headerName: t('CATEGORY'), tooltipField: 'category', minWidth: 140 },
+    { field: 'vehicle', headerName: t('VEHICLE FITMENT'), tooltipField: 'vehicle', minWidth: 190 },
     {
       field: 'price',
-      headerName: 'PRICE',
+      headerName: t('PRICE'),
       minWidth: 125,
       filter: 'agNumberColumnFilter',
       tooltipValueGetter: ({ value }) => catalogueCurrency.format(Number(value)),
@@ -99,21 +101,21 @@ function CatalogueInventoryPage() {
     },
     {
       field: 'stock',
-      headerName: 'STOCK',
+      headerName: t('STOCK'),
       minWidth: 105,
       filter: 'agNumberColumnFilter',
-      tooltipValueGetter: ({ value }) => `${value} units available`,
+      tooltipValueGetter: ({ value }) => `${value} ${t('units available')}`,
       cellClass: ({ value }) => Number(value) < 10 ? 'catalogue-stock-low' : 'catalogue-stock-ready',
-      valueFormatter: ({ value }) => `${value} units`,
+      valueFormatter: ({ value }) => `${value} ${t('units')}`,
     },
-    { field: 'warranty', headerName: 'WARRANTY', tooltipField: 'warranty', minWidth: 125 },
-  ], [])
+    { field: 'warranty', headerName: t('WARRANTY'), tooltipField: 'warranty', minWidth: 125 },
+  ], [t])
 
   function exportProductPdf(part: CataloguePart) {
     setPdfError('')
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
-      setPdfError('Your browser blocked the PDF preview. Allow pop-ups for this site and try again.')
+      setPdfError(t('Your browser blocked the PDF preview. Allow pop-ups for this site and try again.'))
       return
     }
     printWindow.opener = null
@@ -150,7 +152,7 @@ function CatalogueInventoryPage() {
         <body>
           <main>
             <header>
-              <div><div class="eyebrow">NEXUSFLOW / PRODUCT SHEET</div><h1>${escapeHtml(part.name)}</h1><div class="part-number">PART NO. ${escapeHtml(part.id)}</div></div>
+              <div><div class="eyebrow">${escapeHtml(t('NEXUSFLOW / PRODUCT SHEET'))}</div><h1>${escapeHtml(part.name)}</h1><div class="part-number">${escapeHtml(t('PART NO.'))} ${escapeHtml(part.id)}</div></div>
               <div class="eyebrow">${escapeHtml(part.category)}</div>
             </header>
             <section class="content">
@@ -158,15 +160,15 @@ function CatalogueInventoryPage() {
               <div>
                 <p>${escapeHtml(part.description)}</p>
                 <dl>
-                  <div><dt>Vehicle fitment</dt><dd>${escapeHtml(part.vehicle)}</dd></div>
-                  <div><dt>Stock available</dt><dd>${part.stock} units</dd></div>
-                  <div><dt>Warranty</dt><dd>${escapeHtml(part.warranty)}</dd></div>
+                  <div><dt>${escapeHtml(t('Vehicle fitment'))}</dt><dd>${escapeHtml(part.vehicle)}</dd></div>
+                  <div><dt>${escapeHtml(t('Stock available'))}</dt><dd>${part.stock} ${escapeHtml(t('units'))}</dd></div>
+                  <div><dt>${escapeHtml(t('Warranty'))}</dt><dd>${escapeHtml(part.warranty)}</dd></div>
                 </dl>
-                <div class="eyebrow">RETAIL PRICE</div>
+                <div class="eyebrow">${escapeHtml(t('RETAIL PRICE'))}</div>
                 <div class="price">${escapeHtml(catalogueCurrency.format(part.price))}</div>
               </div>
             </section>
-            <footer>NexusFlow parts catalogue · Prices in USD · Availability may change</footer>
+            <footer>${escapeHtml(t('NexusFlow parts catalogue · Prices in USD · Availability may change'))}</footer>
           </main>
         </body>
       </html>`
@@ -183,14 +185,14 @@ function CatalogueInventoryPage() {
     if (image?.complete && image.naturalWidth > 0) {
       printWhenReady()
     } else if (image?.complete) {
-      setPdfError('The product image could not be loaded for the PDF preview.')
+      setPdfError(t('The product image could not be loaded for the PDF preview.'))
     } else if (image) {
       image.addEventListener('load', printWhenReady, { once: true })
       image.addEventListener('error', () => {
-        setPdfError('The product image could not be loaded for the PDF preview.')
+        setPdfError(t('The product image could not be loaded for the PDF preview.'))
       }, { once: true })
     } else {
-      setPdfError('The product image could not be loaded for the PDF preview.')
+      setPdfError(t('The product image could not be loaded for the PDF preview.'))
     }
   }
 
@@ -201,40 +203,40 @@ function CatalogueInventoryPage() {
     <section className="catalogue-page catalogue-inventory-page">
       <div className="catalogue-page-heading">
         <div>
-          <p className="eyebrow">NEXUSFLOW / PRODUCT INVENTORY</p>
-          <h1>Product inventory</h1>
-          <p>One clear view of every part, its fitment, price, stock, and warranty.</p>
+          <p className="eyebrow">{t('NEXUSFLOW / PRODUCT INVENTORY')}</p>
+          <h1>{t('Product inventory')}</h1>
+          <p>{t('One clear view of every part, its fitment, price, stock, and warranty.')}</p>
         </div>
         <div className="catalogue-heading-actions">
-          <Link className="catalogue-card-view-link" to="/catalogue">Featured catalogue <span aria-hidden="true">→</span></Link>
-          <Link className="catalogue-card-view-link" to="/catalogue/cards">Browse cards <span aria-hidden="true">→</span></Link>
-          <span className="catalogue-count"><strong>{catalogueParts.length}</strong> products</span>
+          <Link className="catalogue-card-view-link" to="/catalogue">{t('Featured catalogue')} <span aria-hidden="true">→</span></Link>
+          <Link className="catalogue-card-view-link" to="/catalogue/cards">{t('Browse cards')} <span aria-hidden="true">→</span></Link>
+          <span className="catalogue-count"><strong>{catalogueParts.length}</strong> {t('products')}</span>
         </div>
       </div>
 
-      {catalogueLoading && <p className="catalogue-feedback" role="status">Loading current inventory…</p>}
+      {catalogueLoading && <p className="catalogue-feedback" role="status">{t('Loading current inventory…')}</p>}
       {catalogueError && <p className="catalogue-feedback error" role="alert">{catalogueError}</p>}
-      <div className="catalogue-inventory-summary" aria-label="Inventory summary">
-        <article><span>PRODUCTS</span><strong>{catalogueParts.length}</strong><small>Across {catalogueCategories.length - 1} categories</small></article>
-        <article><span>LOW STOCK</span><strong>{lowStockCount}</strong><small>Fewer than 10 units available</small></article>
-        <article><span>STOCK VALUE</span><strong>{catalogueCurrency.format(inventoryValue)}</strong><small>Based on retail price and stock</small></article>
+      <div className="catalogue-inventory-summary" aria-label={t('Inventory summary')}>
+        <article><span>{t('PRODUCTS')}</span><strong>{catalogueParts.length}</strong><small>{t('Across')} {catalogueCategories.length - 1} {t('categories')}</small></article>
+        <article><span>{t('LOW STOCK')}</span><strong>{lowStockCount}</strong><small>{t('Fewer than 10 units available')}</small></article>
+        <article><span>{t('STOCK VALUE')}</span><strong>{catalogueCurrency.format(inventoryValue)}</strong><small>{t('Based on retail price and stock')}</small></article>
       </div>
 
       <section className="catalogue-table-section" aria-labelledby="catalogue-inventory-title">
         <div className="catalogue-table-heading">
           <div>
-            <p className="eyebrow">COMPLETE PRODUCT RANGE</p>
-            <h2 id="catalogue-inventory-title">Inventory list</h2>
+            <p className="eyebrow">{t('COMPLETE PRODUCT RANGE')}</p>
+            <h2 id="catalogue-inventory-title">{t('Inventory list')}</h2>
           </div>
           <div className="catalogue-table-filters">
             <label className="catalogue-search">
-              <span className="sr-only">Search products</span>
+              <span className="sr-only">{t('Search products')}</span>
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.6" /><path d="m13 13 4 4" /></svg>
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products" title="Search product names, numbers, descriptions, fitment, or warranty" />
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('Search products')} title={t('Search product names, numbers, descriptions, fitment, or warranty')} />
             </label>
             <label className="catalogue-category-filter">
-              <span className="sr-only">Filter by category</span>
-              <select value={category} onChange={(event) => setCategory(event.target.value)} title="Filter products by category">
+              <span className="sr-only">{t('Filter by category')}</span>
+              <select value={category} onChange={(event) => setCategory(event.target.value)} title={t('Filter products by category')}>
                 {catalogueCategories.map((item) => <option key={item}>{item}</option>)}
               </select>
             </label>
@@ -254,10 +256,10 @@ function CatalogueInventoryPage() {
             getRowId={({ data }) => data.id}
             rowHeight={62}
             headerHeight={48}
-            overlayNoRowsTemplate="No matching products found."
+            overlayNoRowsTemplate={t('No matching products found.')}
           />
         </div>
-        <p className="catalogue-grid-hint">Click any product image to preview its product sheet and print or save it as a PDF.</p>
+        <p className="catalogue-grid-hint">{t('Click any product image to preview its product sheet and print or save it as a PDF.')}</p>
       </section>
 
       <Modal
@@ -271,7 +273,7 @@ function CatalogueInventoryPage() {
       >
         {activePart && (
           <>
-            <button type="button" className="catalogue-modal-close" aria-label="Close product preview" onClick={() => setActivePart(null)}>×</button>
+            <button type="button" className="catalogue-modal-close" aria-label={t('Close product preview')} onClick={() => setActivePart(null)}>×</button>
             <div className="catalogue-modal-image"><img src={activePart.image} alt={activePart.imageAlt} /></div>
             <div className="catalogue-modal-copy">
               <span className="catalogue-category-tag">{activePart.category}</span>
@@ -279,19 +281,19 @@ function CatalogueInventoryPage() {
               <h2 id="catalogue-preview-title">{activePart.name}</h2>
               <p>{activePart.description}</p>
               <dl className="catalogue-detail-list">
-                <div><dt>Vehicle fitment</dt><dd>{activePart.vehicle}</dd></div>
-                <div><dt>Availability</dt><dd>{activePart.stock} units in stock</dd></div>
-                <div><dt>Warranty</dt><dd>{activePart.warranty}</dd></div>
+                <div><dt>{t('Vehicle fitment')}</dt><dd>{activePart.vehicle}</dd></div>
+                <div><dt>{t('Availability')}</dt><dd>{activePart.stock} {t('units in stock')}</dd></div>
+                <div><dt>{t('Warranty')}</dt><dd>{activePart.warranty}</dd></div>
               </dl>
               <div className="catalogue-inventory-preview-price">
-                <span>Retail price</span>
+                <span>{t('Retail price')}</span>
                 <strong>{catalogueCurrency.format(activePart.price)}</strong>
               </div>
               {pdfError && <p className="catalogue-pdf-error" role="alert">{pdfError}</p>}
               <button className="catalogue-primary-button catalogue-inventory-export" type="button" onClick={() => exportProductPdf(activePart)}>
-                Print / Save product as PDF
+                {t('Print / Save product as PDF')}
               </button>
-              <small className="catalogue-inventory-print-hint">Choose “Save as PDF” in your browser’s print dialog.</small>
+              <small className="catalogue-inventory-print-hint">{t('Choose “Save as PDF” in your browser’s print dialog.')}</small>
             </div>
           </>
         )}

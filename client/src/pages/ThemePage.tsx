@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLanguage } from '../LanguageContext'
 import {
   applyCustomTheme,
   applyTheme,
@@ -38,6 +39,7 @@ function readSavedCustomTheme(): CustomThemeColors {
 }
 
 function ThemePage() {
+  const { t } = useLanguage()
   const [selectedTheme, setSelectedTheme] = useState<ThemeSelection>(readSavedTheme)
   const [customColors, setCustomColors] = useState<CustomThemeColors>(readSavedCustomTheme)
   const [customSaved, setCustomSaved] = useState(() => readSavedTheme() === 'custom')
@@ -52,7 +54,7 @@ function ThemePage() {
     applyTheme(theme)
     try {
       window.localStorage.setItem(themeStorageKey, theme)
-      setNotice(`${theme} theme applied to your client portal.`)
+      setNotice(`${t(theme)} ${t('theme applied to your client portal.')}`)
     } catch {
       setError('The theme was applied for this visit but could not be saved in this browser.')
     }
@@ -87,19 +89,19 @@ function ThemePage() {
     <section className="theme-settings-page">
       <header className="theme-settings-header">
         <div>
-          <p className="eyebrow">PERSONALIZATION</p>
-          <h1>Choose your theme</h1>
-          <p className="theme-settings-subtitle">Make your client workspace feel like yours. Edit client/src/theme-colors.scss to change preset colors globally; admin portal settings stay separate.</p>
+          <p className="eyebrow">{t('PERSONALIZATION')}</p>
+          <h1>{t('Choose your theme')}</h1>
+          <p className="theme-settings-subtitle">{t('Make your client workspace feel like yours. Edit client/src/theme-colors.scss to change preset colors globally; admin portal settings stay separate.')}</p>
         </div>
-        <span className="theme-saved-indicator"><span /> {selectedTheme === 'custom' ? (customSaved ? 'Custom theme saved' : 'Previewing custom colors') : 'Saved on this device'}</span>
+        <span className="theme-saved-indicator"><span /> {selectedTheme === 'custom' ? t(customSaved ? 'Custom theme saved' : 'Previewing custom colors') : t('Saved on this device')}</span>
       </header>
 
       <div className="theme-settings-note">
         <span className="theme-note-icon" aria-hidden="true">✦</span>
-        <p><strong>One choice, your whole workspace.</strong> Your selected colors apply across client pages and sign-in. Admin portal themes are managed separately.</p>
+        <p><strong>{t('One choice, your whole workspace.')}</strong> {t('Your selected colors apply across client pages and sign-in. Admin portal themes are managed separately.')}</p>
       </div>
 
-      <div className="theme-card-grid" role="radiogroup" aria-label="Client portal themes">
+      <div className="theme-card-grid" role="radiogroup" aria-label={t('Client portal themes')}>
         {themes.map((theme) => {
           const selected = selectedTheme === theme.id
           return (
@@ -109,7 +111,7 @@ function ThemePage() {
               key={theme.id}
               role="radio"
               aria-checked={selected}
-              title={`${theme.name}: ${theme.description}. Select to apply this theme.`}
+              title={`${t(theme.name)}: ${t(theme.description)}. ${t('Select to apply this theme.')}`}
               onClick={() => chooseTheme(theme.id)}
             >
               <span className={`theme-preview theme-preview-${theme.id}`} aria-hidden="true">
@@ -128,8 +130,8 @@ function ThemePage() {
               </span>
               <span className="theme-option-details">
                 <span className="theme-option-copy">
-                  <strong>{theme.name}</strong>
-                  <small>{theme.description}</small>
+                  <strong>{t(theme.name)}</strong>
+                  <small>{t(theme.description)}</small>
                 </span>
                 <span
                   className="theme-swatches"
@@ -149,11 +151,11 @@ function ThemePage() {
       <section className={`custom-theme-panel${selectedTheme === 'custom' ? ' selected' : ''}`} aria-labelledby="custom-theme-title">
         <div className="custom-theme-heading">
           <div>
-            <p className="eyebrow">MAKE IT YOURS</p>
-            <h2 id="custom-theme-title">Design a custom theme</h2>
-            <p>Pick colors for your workspace. Changes preview instantly; save to keep them on this device.</p>
+            <p className="eyebrow">{t('MAKE IT YOURS')}</p>
+            <h2 id="custom-theme-title">{t('Design a custom theme')}</h2>
+            <p>{t('Pick colors for your workspace. Changes preview instantly; save to keep them on this device.')}</p>
           </div>
-          <div className="custom-theme-preview" aria-label="Custom theme preview">
+          <div className="custom-theme-preview" aria-label={t('Custom theme preview')}>
             {[customColors.sidebar, customColors.accent, customColors.hover, customColors.page, customColors.surface].map((color, index) => (
               <span key={`${index}-${color}`} style={{ backgroundColor: color }} />
             ))}
@@ -172,32 +174,32 @@ function ThemePage() {
                 <input
                   type="color"
                   value={customColors[key]}
-                  aria-label={`${label} color`}
+                  aria-label={`${t(label)} ${t('color')}`}
                   onChange={(event) => updateCustomColor(key, event.currentTarget.value)}
                 />
               </span>
               <span className="custom-theme-color-copy">
-                <strong>{label}</strong>
-                <small>{description}</small>
+                <strong>{t(label)}</strong>
+                <small>{t(description)}</small>
               </span>
               <code>{customColors[key].toUpperCase()}</code>
             </label>
           ))}
         </div>
         <div className="custom-theme-actions">
-          <span>Text and hover text colors are chosen automatically for contrast.</span>
-          <button className="custom-theme-save-button" type="button" onClick={saveCustomTheme}>Save custom theme</button>
+          <span>{t('Text and hover text colors are chosen automatically for contrast.')}</span>
+          <button className="custom-theme-save-button" type="button" onClick={saveCustomTheme}>{t('Save custom theme')}</button>
         </div>
       </section>
 
       <footer className="theme-settings-footer">
         <span className="theme-feedback" role={error ? 'alert' : 'status'}>
-          {error || notice || (selectedTheme === 'custom' && !customSaved
+          {t(error || notice || (selectedTheme === 'custom' && !customSaved
             ? 'Custom colors are previewed. Save them to keep this theme on your device.'
-            : 'Choose a theme to apply it instantly.')}
+            : 'Choose a theme to apply it instantly.'))}
         </span>
-        <button className="theme-reset-button" type="button" title="Restore the default Forest theme" onClick={() => chooseTheme('forest')}>
-          Reset to default
+        <button className="theme-reset-button" type="button" title={t('Restore the default Forest theme')} onClick={() => chooseTheme('forest')}>
+          {t('Reset to default')}
         </button>
       </footer>
     </section>

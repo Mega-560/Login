@@ -1,5 +1,5 @@
 :root {
-  --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Segoe UI Variable", "Segoe UI", "Nirmala UI", "Noto Sans Devanagari", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-sans);
   --type-body-size: 0.875rem;
   --type-caption-size: 0.8125rem;

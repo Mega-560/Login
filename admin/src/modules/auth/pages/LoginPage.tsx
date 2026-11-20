@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import BrandMark from '../../../components/BrandMark'
 import Toast from '../../../components/Toast'
 import { authApi } from '../authApi'
+import { useLanguage } from '../../../LanguageContext'
 
 function LoginPage() {
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
@@ -32,33 +34,33 @@ function LoginPage() {
         <span><BrandMark /></span>
         <strong>NexusFlow <small>Rise</small></strong>
       </div>
-      <p className="eyebrow admin-login-kicker">SECURE ADMIN ACCESS</p>
-      <h2>Administrator sign in</h2>
-      <p className="login-subtitle">Use your administrator account to continue.</p>
+      <p className="eyebrow admin-login-kicker">{t('SECURE ADMIN ACCESS')}</p>
+      <h2>{t('Administrator sign in')}</h2>
+      <p className="login-subtitle">{t('Use your administrator account to continue.')}</p>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="login-email">Work email</label>
-        <input id="login-email" type="email" placeholder="you@company.com" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+        <label htmlFor="login-email">{t('Work email')}</label>
+        <input id="login-email" type="email" placeholder={t('you@company.com')} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
         <div className="password-label-row">
-          <label htmlFor="login-password">Password</label>
-          <Link to="/forgot-password">Forgot password?</Link>
+          <label htmlFor="login-password">{t('Password')}</label>
+          <Link to="/forgot-password">{t('Forgot password?')}</Link>
         </div>
         <div className="password-input-wrap">
-          <input id="login-password" type={isPasswordVisible ? 'text' : 'password'} placeholder="Enter your password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          <input id="login-password" type={isPasswordVisible ? 'text' : 'password'} placeholder={t('Enter your password')} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           <button
             className="password-visibility-toggle"
             type="button"
-            aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+            aria-label={t(isPasswordVisible ? 'Hide password' : 'Show password')}
             aria-pressed={isPasswordVisible}
-            title={isPasswordVisible ? 'Hide password text' : 'Show password text'}
+            title={t(isPasswordVisible ? 'Hide password text' : 'Show password text')}
             onClick={() => setIsPasswordVisible((visible) => !visible)}
           >
-            {isPasswordVisible ? 'Hide' : 'Show'}
+            {t(isPasswordVisible ? 'Hide' : 'Show')}
           </button>
         </div>
-        <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in…' : 'Sign in'} <span aria-hidden="true">→</span></button>
+        <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? t('Signing in…') : t('Sign in')} <span aria-hidden="true">→</span></button>
         {error && <p className="form-notice" role="alert">{error}</p>}
       </form>
-      <p className="login-footer admin-login-footer">Client account? <a href={`${window.location.protocol}//${window.location.hostname}:5173/login`}>Go to client sign in</a></p>
+      <p className="login-footer admin-login-footer">{t('Client account?')} <a href={`${window.location.protocol}//${window.location.hostname}:5173/login`}>{t('Go to client sign in')}</a></p>
       {error && <Toast message={error} type="error" onDismiss={() => setError('')} />}
     </div>
   )

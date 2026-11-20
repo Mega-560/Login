@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { authApi } from '../authApi'
+import { useLanguage } from '../../../LanguageContext'
 
 interface RecoveryState {
   email?: string
 }
 
 function VerifyOtpPage() {
+  const { t } = useLanguage()
   const location = useLocation()
   const navigate = useNavigate()
   const email = (location.state as RecoveryState | null)?.email ?? ''
@@ -31,22 +33,22 @@ function VerifyOtpPage() {
 
   return (
     <div className="login-form-wrap">
-      <p className="eyebrow">EMAIL VERIFICATION</p>
-      <h2>Enter your verification code</h2>
+      <p className="eyebrow">{t('EMAIL VERIFICATION')}</p>
+      <h2>{t('Enter your verification code')}</h2>
       <p className="login-subtitle">
-        {recoveryEmail ? <>Enter the six-digit code sent to <strong>{recoveryEmail}</strong>.</> : 'Enter your work email and six-digit verification code.'}
+        {recoveryEmail ? <>{t('Enter the six-digit code sent to')} <strong>{recoveryEmail}</strong>.</> : t('Enter your work email and six-digit verification code.')}
       </p>
       <p className="auth-demo-notice" role="note">
-        The code expires after 10 minutes. You have a limited number of attempts.
+        {t('The code expires after 10 minutes. You have a limited number of attempts.')}
       </p>
       <form onSubmit={handleSubmit}>
         {!email && (
           <>
-            <label htmlFor="otp-email">Work email</label>
+            <label htmlFor="otp-email">{t('Work email')}</label>
               <input
                 id="otp-email"
                 type="email"
-                placeholder="you@company.com"
+                placeholder={t('you@company.com')}
                 autoComplete="email"
                 value={recoveryEmail}
                 onChange={(event) => setRecoveryEmail(event.target.value)}
@@ -54,7 +56,7 @@ function VerifyOtpPage() {
               />
           </>
         )}
-        <label htmlFor="otp-code">Six-digit code</label>
+        <label htmlFor="otp-code">{t('Six-digit code')}</label>
         <input
           id="otp-code"
           type="text"
@@ -67,10 +69,10 @@ function VerifyOtpPage() {
           onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
           required
         />
-        <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Verifying code…' : 'Continue to reset password'} <span aria-hidden="true">→</span></button>
+        <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? t('Verifying code…') : t('Continue to reset password')} <span aria-hidden="true">→</span></button>
         {error && <p className="form-notice" role="alert">{error}</p>}
       </form>
-      <p className="login-footer"><Link to="/forgot-password">Use a different email</Link></p>
+      <p className="login-footer"><Link to="/forgot-password">{t('Use a different email')}</Link></p>
     </div>
   )
 }

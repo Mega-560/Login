@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import BrandMark from './BrandMark'
+import { useLanguage } from '../LanguageContext'
 
 type MenuIconName = 'dashboard' | 'users' | 'roles' | 'calendar' | 'catalogue' | 'parts' | 'orders' | 'partners' | 'map' | 'theme'
 
@@ -26,6 +27,8 @@ interface SideMenuProps {
 }
 
 function SideMenu({ isCollapsed, onToggle }: SideMenuProps) {
+  const { t } = useLanguage()
+
   return (
     <aside className="sidebar">
       <div className="brand-lockup">
@@ -33,62 +36,62 @@ function SideMenu({ isCollapsed, onToggle }: SideMenuProps) {
         <span className="brand-name">NexusFlow</span>
       </div>
 
-      <div className="sidebar-label">Workspace</div>
-      <nav className="sidebar-nav" aria-label="Main navigation">
-        <NavLink to="/admin" end className="sidebar-link" aria-label="Dashboard" title="View inventory, sales, and order analytics">
+      <div className="sidebar-label">{t('Workspace')}</div>
+      <nav className="sidebar-nav" aria-label={t('Main navigation')}>
+        <NavLink to="/admin" end className="sidebar-link" aria-label={t('Dashboard')} title={t('View inventory, sales, and order analytics')}>
           <MenuIcon name="dashboard" />
-          <span className="nav-label">Dashboard</span>
+          <span className="nav-label">{t('Dashboard')}</span>
         </NavLink>
-        <NavLink to="/admin/users" className="sidebar-link" aria-label="User admin" title="Manage user accounts">
+        <NavLink to="/admin/users" className="sidebar-link" aria-label={t('User admin')} title={t('Manage user accounts')}>
           <MenuIcon name="users" />
-          <span className="nav-label">User admin</span>
+          <span className="nav-label">{t('User admin')}</span>
         </NavLink>
-        <NavLink to="/admin/roles" className="sidebar-link" aria-label="Roles and permissions" title="Manage client page permissions">
+        <NavLink to="/admin/roles" className="sidebar-link" aria-label={t('Roles & permissions')} title={t('Manage client page permissions')}>
           <MenuIcon name="roles" />
-          <span className="nav-label">Roles &amp; permissions</span>
+          <span className="nav-label">{t('Roles & permissions')}</span>
         </NavLink>
-        <NavLink to="/admin/calendar" className="sidebar-link" aria-label="Calendar" title="Create and view upcoming events">
+        <NavLink to="/admin/calendar" className="sidebar-link" aria-label={t('Calendar')} title={t('Create and view upcoming events')}>
           <MenuIcon name="calendar" />
-          <span className="nav-label">Calendar</span>
+          <span className="nav-label">{t('Calendar')}</span>
         </NavLink>
-        <NavLink to="/admin/parts" className="sidebar-link" aria-label="Parts inventory" title="Manage products, prices, and stock">
+        <NavLink to="/admin/parts" className="sidebar-link" aria-label={t('Parts inventory')} title={t('Manage products, prices, and stock')}>
           <MenuIcon name="parts" />
-          <span className="nav-label">Parts inventory</span>
+          <span className="nav-label">{t('Parts inventory')}</span>
         </NavLink>
-        <NavLink to="/admin/orders" className="sidebar-link" aria-label="Customer orders" title="Review orders and fulfillment">
+        <NavLink to="/admin/orders" className="sidebar-link" aria-label={t('Customer orders')} title={t('Review orders and fulfillment')}>
           <MenuIcon name="orders" />
-          <span className="nav-label">Customer orders</span>
+          <span className="nav-label">{t('Customer orders')}</span>
         </NavLink>
-        <NavLink to="/admin/partners" className="sidebar-link" aria-label="Dealers and retailers" title="Manage business partner contacts">
+        <NavLink to="/admin/partners" className="sidebar-link" aria-label={t('Dealers & retailers')} title={t('Manage business partner contacts')}>
           <MenuIcon name="partners" />
-          <span className="nav-label">Dealers &amp; retailers</span>
+          <span className="nav-label">{t('Dealers & retailers')}</span>
         </NavLink>
-        <NavLink to="/admin/catalogue" className="sidebar-link" aria-label="Catalogue manuals" title="Browse and manage catalogue manuals">
+        <NavLink to="/admin/catalogue" className="sidebar-link" aria-label={t('Catalogue manuals')} title={t('Browse and manage catalogue manuals')}>
           <MenuIcon name="catalogue" />
-          <span className="nav-label">Catalogue</span>
+          <span className="nav-label">{t('Catalogue')}</span>
         </NavLink>
-        <NavLink to="/admin/state-map" className="sidebar-link" aria-label="India state map" title="Explore state-wise dealer coverage">
+        <NavLink to="/admin/state-map" className="sidebar-link" aria-label={t('India state map')} title={t('Explore state-wise dealer coverage')}>
           <MenuIcon name="map" />
-          <span className="nav-label">India state map</span>
+          <span className="nav-label">{t('India state map')}</span>
         </NavLink>
-        <NavLink to="/admin/theme" className="sidebar-link" aria-label="Theme settings" title="Customize the admin portal theme">
+        <NavLink to="/admin/theme" className="sidebar-link" aria-label={t('Theme settings')} title={t('Customize the admin portal theme')}>
           <MenuIcon name="theme" />
-          <span className="nav-label">Theme</span>
+          <span className="nav-label">{t('Theme')}</span>
         </NavLink>
       </nav>
 
       <div className="sidebar-bottom">
         <div className="sidebar-note">
           <span className="status-dot" />
-          <span className="nav-label">All systems operational</span>
+          <span className="nav-label">{t('All systems operational')}</span>
         </div>
       </div>
 
       <button
         className="sidebar-toggle"
         type="button"
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={t(isCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
+        title={t(isCollapsed ? 'Expand sidebar' : 'Collapse sidebar')}
         aria-expanded={!isCollapsed}
         onClick={onToggle}
       >

@@ -13,6 +13,7 @@ import ResetPasswordPage from '../modules/auth/pages/ResetPasswordPage'
 import VerifyOtpPage from '../modules/auth/pages/VerifyOtpPage'
 import RequireAuth from '../modules/auth/RequireAuth'
 import { AccessDeniedPage, HomePageAccess, RequirePageAccess } from '../modules/auth/PageAccessGuard'
+import { useLanguage } from '../LanguageContext'
 import '../App.css'
 
 const CataloguePage = lazy(() => import('../pages/CataloguePage'))
@@ -24,6 +25,8 @@ const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
 
 function AppRoutes() {
+  const { t } = useLanguage()
+
   return (
     <Routes>
       <Route element={<AuthLayout />}>
@@ -39,7 +42,7 @@ function AppRoutes() {
           <Route
             path="catalogue"
             element={(
-              <Suspense fallback={<div className="catalogue-loading" role="status">Loading parts catalogue…</div>}>
+              <Suspense fallback={<div className="catalogue-loading" role="status">{t('Loading parts catalogue…')}</div>}>
                 <CataloguePage />
               </Suspense>
             )}
@@ -47,7 +50,7 @@ function AppRoutes() {
           <Route
             path="catalogue/cards"
             element={(
-              <Suspense fallback={<div className="catalogue-loading" role="status">Loading parts catalogue…</div>}>
+              <Suspense fallback={<div className="catalogue-loading" role="status">{t('Loading parts catalogue…')}</div>}>
                 <CatalogueCardsPage />
               </Suspense>
             )}
@@ -55,7 +58,7 @@ function AppRoutes() {
           <Route
             path="catalogue/inventory"
             element={(
-              <Suspense fallback={<div className="catalogue-loading" role="status">Loading product inventory…</div>}>
+              <Suspense fallback={<div className="catalogue-loading" role="status">{t('Loading product inventory…')}</div>}>
                 <CatalogueInventoryPage />
               </Suspense>
             )}
@@ -63,14 +66,14 @@ function AppRoutes() {
           <Route
             path="catalogue/pdf"
             element={(
-              <Suspense fallback={<div className="catalogue-loading" role="status">Preparing printable catalogue…</div>}>
+              <Suspense fallback={<div className="catalogue-loading" role="status">{t('Preparing printable catalogue…')}</div>}>
                 <CataloguePdfPage />
               </Suspense>
             )}
           />
           <Route path="cart" element={<CartPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="orders" element={<Suspense fallback={<div className="catalogue-loading" role="status">Loading order history…</div>}><OrderHistoryPage /></Suspense>} />
+          <Route path="orders" element={<Suspense fallback={<div className="catalogue-loading" role="status">{t('Loading order history…')}</div>}><OrderHistoryPage /></Suspense>} />
           <Route element={<RequirePageAccess page="about" />}>
             <Route path="about" element={<AboutPage />} />
           </Route>

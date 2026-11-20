@@ -13,6 +13,7 @@ import LoginPage from './modules/auth/pages/LoginPage'
 import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage'
 import VerifyOtpPage from './modules/auth/pages/VerifyOtpPage'
 import RequireAuth from './modules/auth/RequireAuth'
+import { LanguageProvider, useLanguage } from './LanguageContext'
 import './App.css'
 import './theme-colors.scss'
 
@@ -23,20 +24,26 @@ const CataloguePartsPage = lazy(() => import('./components/CataloguePartsPage'))
 const CatalogueOrdersPage = lazy(() => import('./components/CatalogueOrdersPage'))
 const BusinessPartnersPage = lazy(() => import('./components/BusinessPartnersPage'))
 
+function LoadingMessage({ message }: { message: string }) {
+  const { t } = useLanguage()
+  return <div className="admin-dashboard-loading" role="status">{t(message)}</div>
+}
+
 function App() {
   return (
-    <Routes>
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/verify-otp" element={<VerifyOtpPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-      </Route>
-      <Route element={<RequireAuth />}>
-        <Route element={<RequireAdmin />}>
-          <Route path="/admin" element={<DashboardLayout />}>
+    <LanguageProvider>
+      <Routes>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/verify-otp" element={<VerifyOtpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+        </Route>
+        <Route element={<RequireAuth />}>
+          <Route element={<RequireAdmin />}>
+            <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={(
-              <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading dashboard charts…</div>}>
+              <Suspense fallback={<LoadingMessage message="Loading dashboard charts…" />}>
                 <DashboardPage />
               </Suspense>
             )} />
@@ -46,7 +53,7 @@ function App() {
             <Route
               path="parts"
               element={(
-                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading parts inventory…</div>}>
+                <Suspense fallback={<LoadingMessage message="Loading parts inventory…" />}>
                   <CataloguePartsPage />
                 </Suspense>
               )}
@@ -54,7 +61,7 @@ function App() {
             <Route
               path="orders"
               element={(
-                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading customer orders…</div>}>
+                <Suspense fallback={<LoadingMessage message="Loading customer orders…" />}>
                   <CatalogueOrdersPage />
                 </Suspense>
               )}
@@ -62,7 +69,7 @@ function App() {
             <Route
               path="partners"
               element={(
-                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading business partners…</div>}>
+                <Suspense fallback={<LoadingMessage message="Loading business partners…" />}>
                   <BusinessPartnersPage />
                 </Suspense>
               )}
@@ -70,7 +77,7 @@ function App() {
             <Route
               path="catalogue"
               element={(
-                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading catalogue…</div>}>
+                <Suspense fallback={<LoadingMessage message="Loading catalogue…" />}>
                   <CataloguePage />
                 </Suspense>
               )}
@@ -78,18 +85,19 @@ function App() {
             <Route
               path="state-map"
               element={(
-                <Suspense fallback={<div className="admin-dashboard-loading" role="status">Loading India state map…</div>}>
+                <Suspense fallback={<LoadingMessage message="Loading India state map…" />}>
                   <StateMapPage />
                 </Suspense>
               )}
             />
             <Route path="theme" element={<ThemePage />} />
+            </Route>
+            <Route path="/" element={<Navigate to="/admin" replace />} />
           </Route>
-          <Route path="/" element={<Navigate to="/admin" replace />} />
         </Route>
-      </Route>
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </LanguageProvider>
   )
 }
 
